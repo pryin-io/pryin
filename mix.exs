@@ -32,6 +32,9 @@ defmodule Skope.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:plug, "~> 1.0", optional: true},
+      {:phoenix, "~> 1.2", optional: true},
+    ]
   end
 end
