@@ -24,6 +24,7 @@ defmodule Skope.Plug do
   def call(conn, _opts) do
     req_start_time = utc_unix_datetime
     interaction = %Interaction{start_time: req_start_time,
+                               type: "request",
                                interaction_id: Logger.metadata[:request_id] || generate_interaction_id()}
 
     InteractionStore.start_interaction(self, interaction)

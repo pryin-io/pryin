@@ -18,6 +18,7 @@ defmodule Skope.PlugTest do
     [interaction] = InteractionStore.get_state.finished_interactions
     assert interaction.start_time
     assert interaction.duration
+    assert interaction.type == "request"
   end
 
   describe "action and controller" do
