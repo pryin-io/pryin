@@ -35,6 +35,7 @@ defmodule Skope.Mixfile do
     [
       {:plug, "~> 1.0", optional: true},
       {:phoenix, "~> 1.2", optional: true},
+      {:ecto, "~> 2.0", optional: true},
     ]
   end
 end
