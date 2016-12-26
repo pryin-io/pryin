@@ -8,6 +8,7 @@ defmodule Skope.Mixfile do
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     compilers: compilers(Mix.env),
      deps: deps()]
   end
 
@@ -21,6 +22,9 @@ defmodule Skope.Mixfile do
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_),     do: ["lib"]
+
+  defp compilers(:test), do: [:phoenix] ++ Mix.compilers
+  defp compilers(_), do: Mix.compilers
 
   # Dependencies can be Hex packages:
   #
