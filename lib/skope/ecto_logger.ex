@@ -1,6 +1,6 @@
 defmodule Skope.EctoLogger do
   require Logger
-  alias Skope.InteractionStore
+  alias Skope.{Wormhole, InteractionStore}
   import Skope.TimeHelper
 
   @moduledoc """
@@ -18,13 +18,10 @@ defmodule Skope.EctoLogger do
   @doc false
   def log(log_entry) do
     pid = self
-    try do
+    Wormhole.capture fn ->
       do_log(log_entry, pid)
-    rescue
-      e -> Logger.warn("[Skope.EctoLogger] Could not log ecto query: #{inspect e}")
-    catch
-      e -> Logger.warn("[Skope.EctoLogger] Could not log ecto query: #{inspect e}")
     end
+
     log_entry
   end
 

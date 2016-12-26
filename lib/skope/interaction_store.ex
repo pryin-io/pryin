@@ -2,6 +2,7 @@ defmodule Skope.InteractionStore do
   use GenServer
   require Logger
   defstruct [size: 0, running_interactions: %{}, monitor_refs: %{}, finished_interactions: []]
+  alias Skope.Wormhole
 
   @moduledoc """
   Stores interactions that will later be forwarded by the forwarder.
@@ -34,7 +35,14 @@ defmodule Skope.InteractionStore do
   end
 
   def has_pid?(pid) do
-    GenServer.call(__MODULE__, {:has_pid, pid})
+    result = Wormhole.capture fn ->
+      GenServer.call(__MODULE__, {:has_pid, pid})
+    end
+
+    case result do
+      {:ok, true_or_false} -> true_or_false
+      _ -> false
+    end
   end
 
   def get_field(pid, field) do

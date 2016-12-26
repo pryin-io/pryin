@@ -1,6 +1,10 @@
 defmodule Skope.Api.Live do
   use HTTPoison.Base
-  @moduledoc false
+  require Logger
+
+  @moduledoc """
+  Api module for Skope
+  """
   @behaviour Skope.Api
   @prod_base_url "https://client.skope.io/api/client"
   @env Application.fetch_env!(:skope, :env)
@@ -14,7 +18,10 @@ defmodule Skope.Api.Live do
     |> Poison.encode!
 
     if Application.get_env(:skope, :enabled) do
-      post!("interactions", body)
+      case post("interactions", body) do
+        {:ok, %{status_code: 201}} -> :ok
+        response -> Logger.warn "Could not send interactions to Skope: #{inspect response}"
+      end
     end
   end
 
