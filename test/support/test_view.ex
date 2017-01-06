@@ -1,4 +1,4 @@
-defmodule Skope.TestView do
+defmodule PryIn.TestView do
 
   def render("test_template.html", _) do
     "Hi"

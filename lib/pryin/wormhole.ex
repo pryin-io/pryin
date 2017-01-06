@@ -1,4 +1,4 @@
-defmodule Skope.Wormhole do
+defmodule PryIn.Wormhole do
   @moduledoc """
   Run a function capturing any errors.
   """

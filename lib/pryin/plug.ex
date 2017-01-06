@@ -1,8 +1,8 @@
-defmodule Skope.Plug do
+defmodule PryIn.Plug do
   @behaviour Plug
   import Plug.Conn, only: [register_before_send: 2]
-  import Skope.TimeHelper
-  alias Skope.{InteractionStore, Interaction}
+  import PryIn.TimeHelper
+  alias PryIn.{InteractionStore, Interaction}
 
   @moduledoc """
   Collects metrics about requests.
@@ -10,7 +10,7 @@ defmodule Skope.Plug do
   Add to your `Plug` pipeline with:
 
   ```elixir
-  plug Skope.Plug
+  plug PryIn.Plug
   ```
 
   If used in a Phoenix application, it is recommended to add this to your

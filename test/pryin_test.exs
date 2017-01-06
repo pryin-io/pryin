@@ -1,6 +1,6 @@
-defmodule SkopeTest do
+defmodule PryInTest do
   use ExUnit.Case
-  doctest Skope
+  doctest PryIn
 
   test "the truth" do
     assert 1 + 1 == 2

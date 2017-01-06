@@ -1,13 +1,13 @@
-defmodule Skope.InstrumenterTest do
-  use Skope.Case
+defmodule PryIn.InstrumenterTest do
+  use PryIn.Case
   use Phoenix.ConnTest
-  require Skope.TestEndpoint
-  alias Skope.InteractionStore
+  require PryIn.TestEndpoint
+  alias PryIn.InteractionStore
 
-  @endpoint Skope.TestEndpoint
+  @endpoint PryIn.TestEndpoint
 
   setup _ do
-    Skope.TestEndpoint.start_link
+    PryIn.TestEndpoint.start_link
     conn = build_conn()
     {:ok, conn: conn}
   end
@@ -38,14 +38,14 @@ defmodule Skope.InstrumenterTest do
     assert custom_instrumentation.key == "expensive_api_call"
     assert custom_instrumentation.file =~ "test/support/test_controller.ex"
     assert custom_instrumentation.function == "custom_instrumentation_action/2"
-    assert custom_instrumentation.module == "Skope.TestController"
+    assert custom_instrumentation.module == "PryIn.TestController"
     assert custom_instrumentation.line > 0
   end
 
 
   test "custom instrumentation outside of a interaction" do
     assert ExUnit.CaptureLog.capture_log(fn ->
-      Skope.TestEndpoint.instrument :skope, %{key: "expensive_api_call"}, fn ->
+      PryIn.TestEndpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
         :timer.sleep(1)
       end
     end) == ""

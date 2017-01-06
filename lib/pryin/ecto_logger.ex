@@ -1,7 +1,7 @@
-defmodule Skope.EctoLogger do
+defmodule PryIn.EctoLogger do
   require Logger
-  alias Skope.{Wormhole, InteractionStore}
-  import Skope.TimeHelper
+  alias PryIn.{Wormhole, InteractionStore}
+  import PryIn.TimeHelper
 
   @moduledoc """
   Collects metrics for ecto queries inside a tracked interaction.
@@ -10,7 +10,7 @@ defmodule Skope.EctoLogger do
 
   ```elixir
   config :my_app, MyApp.Repo,
-    loggers: [Skope.EctoLogger, Ecto.LogEntry]
+    loggers: [PryIn.EctoLogger, Ecto.LogEntry]
   ```
 
   """

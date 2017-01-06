@@ -1,6 +1,6 @@
-defmodule Skope.Instrumenter do
-  alias Skope.InteractionStore
-  import Skope.TimeHelper
+defmodule PryIn.Instrumenter do
+  alias PryIn.InteractionStore
+  import PryIn.TimeHelper
 
   @moduledoc """
   Collects metrics about view rendering and allows for custom instrumentation
@@ -9,13 +9,13 @@ defmodule Skope.Instrumenter do
 
   ```elixir
   config :my_app, MyApp.Endpoint,
-    instrumenters: [Skope.Instrumenter]
+    instrumenters: [PryIn.Instrumenter]
   ```
 
   To collect instrument custom code, wrap it with the `instrument` macro:
   ```elixir
     requre MyApp.Endpoint
-    MyApp.Endpoint.instrument :skope, %{key: "expensive_api_call"}, fn ->
+    MyApp.Endpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
       ...
     end
   ```
@@ -47,7 +47,7 @@ defmodule Skope.Instrumenter do
   end
   def phoenix_controller_render(:stop, _time_diff, _), do: :ok
 
-  def skope(:start, compile_metadata, %{key: key}) do
+  def pryin(:start, compile_metadata, %{key: key}) do
     if InteractionStore.has_pid?(self) do
       now = utc_unix_datetime()
       offset = now - InteractionStore.get_field(self, :start_time)
@@ -60,8 +60,8 @@ defmodule Skope.Instrumenter do
         line: compile_metadata.line}
     end
   end
-  def skope(:stop, _time_diff, nil), do: :ok
-  def skope(:stop, time_diff, data) do
+  def pryin(:stop, _time_diff, nil), do: :ok
+  def pryin(:stop, time_diff, data) do
     duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
     data = Map.put(data, :duration, duration)
     InteractionStore.add_extra_data(self, data)

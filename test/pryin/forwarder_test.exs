@@ -1,9 +1,9 @@
-defmodule Skope.ForwarderTest do
-  use Skope.Case
-  alias Skope.{Interaction, InteractionStore}
+defmodule PryIn.ForwarderTest do
+  use PryIn.Case
+  alias PryIn.{Interaction, InteractionStore}
 
   test "does not forward an empty interactions list" do
-    send(Skope.Forwarder, :forward_interactions)
+    send(PryIn.Forwarder, :forward_interactions)
     refute_receive {:interactions_sent, _}
   end
 
@@ -21,7 +21,7 @@ defmodule Skope.ForwarderTest do
     InteractionStore.finish_interaction(pid_2)
     InteractionStore.start_interaction(pid_3, interaction_3)
 
-    send(Skope.Forwarder, :forward_interactions)
+    send(PryIn.Forwarder, :forward_interactions)
     assert_receive {:interactions_sent, interactions}
     assert length(interactions) == 2
     assert %{interaction_1 | start_time: 1} in interactions

@@ -1,4 +1,4 @@
-defmodule Skope.TimeHelper do
+defmodule PryIn.TimeHelper do
   @moduledoc """
   Common functions for handling time.
   """

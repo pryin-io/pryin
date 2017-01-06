@@ -1,6 +1,6 @@
-defmodule Skope.EctoLoggerTest do
-  use Skope.Case
-  alias Skope.{EctoLogger, InteractionStore, Interaction}
+defmodule PryIn.EctoLoggerTest do
+  use PryIn.Case
+  alias PryIn.{EctoLogger, InteractionStore, Interaction}
 
   @log_entry %Ecto.LogEntry{
     query: "SELECT 1",

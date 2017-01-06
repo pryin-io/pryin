@@ -1,4 +1,4 @@
-defmodule Skope.TestEndpoint do
+defmodule PryIn.TestEndpoint do
   use Phoenix.Endpoint, otp_app: :phoenix
-  plug Skope.TestRouter
+  plug PryIn.TestRouter
 end

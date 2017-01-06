@@ -1,18 +1,18 @@
-defmodule Skope.PlugTest do
-  use Skope.Case
+defmodule PryIn.PlugTest do
+  use PryIn.Case
   use Phoenix.ConnTest
-  alias Skope.InteractionStore
+  alias PryIn.InteractionStore
 
-  @endpoint Skope.TestEndpoint
+  @endpoint PryIn.TestEndpoint
 
   setup _ do
-    Skope.TestEndpoint.start_link
+    PryIn.TestEndpoint.start_link
     :ok
   end
 
   test "generates a request" do
     build_conn(:get, "/")
-    |> Skope.Plug.call([])
+    |> PryIn.Plug.call([])
     |> send_resp(:ok, "")
 
     [interaction] = InteractionStore.get_state.finished_interactions
@@ -24,7 +24,7 @@ defmodule Skope.PlugTest do
   describe "action and controller" do
     test "in plug apps" do
       conn = build_conn(:get, "/test")
-      Skope.TestPlugApp.call(conn, [])
+      PryIn.TestPlugApp.call(conn, [])
 
       [interaction] = InteractionStore.get_state.finished_interactions
       assert interaction.controller == nil
@@ -36,7 +36,7 @@ defmodule Skope.PlugTest do
 
       [interaction] = InteractionStore.get_state.finished_interactions
       assert interaction.action == :test_action
-      assert interaction.controller == "Skope.TestController"
+      assert interaction.controller == "PryIn.TestController"
     end
   end
 
@@ -45,7 +45,7 @@ defmodule Skope.PlugTest do
       request_id = "abcd-1234"
       Logger.metadata(request_id: request_id)
       build_conn(:get, "/test")
-      |> Skope.Plug.call([])
+      |> PryIn.Plug.call([])
       |> send_resp(:ok, "")
 
       [interaction] = InteractionStore.get_state.finished_interactions
@@ -54,7 +54,7 @@ defmodule Skope.PlugTest do
 
     test "generates an interaction_id if none is in loggers metadata" do
       build_conn(:get, "/test")
-      |> Skope.Plug.call([])
+      |> PryIn.Plug.call([])
       |> send_resp(:ok, "")
 
       [interaction] = InteractionStore.get_state.finished_interactions

@@ -1,16 +1,16 @@
-defmodule Skope.Forwarder do
+defmodule PryIn.Forwarder do
   use GenServer
   require Logger
-  alias Skope.InteractionStore
+  alias PryIn.InteractionStore
 
   @moduledoc """
   Polls for metrics and forwards them to the API.
   Polling interval can be configured with
-  `config :skope, :forward_interval, 1000`.
+  `config :pryin, :forward_interval, 1000`.
   API restrictions may apply.
   """
 
-  @api Application.get_env(:skope, :api, Skope.Api.Live)
+  @api Application.get_env(:pryin, :api, PryIn.Api.Live)
 
 
   # CLIENT
@@ -38,6 +38,6 @@ defmodule Skope.Forwarder do
   end
 
   defp forward_interval_millis do
-    Application.get_env(:skope, :forward_interval, 1000)
+    Application.get_env(:pryin, :forward_interval, 1000)
   end
 end

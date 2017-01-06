@@ -1,6 +1,6 @@
-defmodule Skope.TestController do
+defmodule PryIn.TestController do
   use Phoenix.Controller
-  require Skope.TestEndpoint
+  require PryIn.TestEndpoint
 
   plug :put_layout, false
 
@@ -15,7 +15,7 @@ defmodule Skope.TestController do
   end
 
   def custom_instrumentation_action(conn, _params) do
-    Skope.TestEndpoint.instrument :skope, %{key: "expensive_api_call"}, fn ->
+    PryIn.TestEndpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
       :timer.sleep(1)
     end
 

@@ -1,9 +1,9 @@
 use Mix.Config
 
-config :skope, :api, Skope.Api.Test
-config :skope, :env, "test"
+config :pryin, :api, PryIn.Api.Test
+config :pryin, :env, "test"
 
-config :phoenix, Skope.TestEndpoint,
-  instrumenters: [Skope.Instrumenter]
+config :phoenix, PryIn.TestEndpoint,
+  instrumenters: [PryIn.Instrumenter]
 
 config :logger, level: :warn

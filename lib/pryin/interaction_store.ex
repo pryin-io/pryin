@@ -1,15 +1,15 @@
-defmodule Skope.InteractionStore do
+defmodule PryIn.InteractionStore do
   use GenServer
   require Logger
   defstruct [size: 0, running_interactions: %{}, monitor_refs: %{}, finished_interactions: []]
-  alias Skope.Wormhole
+  alias PryIn.Wormhole
 
   @moduledoc """
   Stores interactions that will later be forwarded by the forwarder.
   When a certain amount of interactions is in the store, further interactions will simply be dropped.
   When the stored interactions are forwarded, the limit is reset.
   This amount can be configured with:
-  `config :skope, :max_interactions_for_interval, 100`
+  `config :pryin, :max_interactions_for_interval, 100`
   """
 
   # CLIENT
@@ -167,6 +167,6 @@ defmodule Skope.InteractionStore do
   end
 
   defp max_interactions do
-    Application.get_env(:skope, :max_interactions_for_interval, 100)
+    Application.get_env(:pryin, :max_interactions_for_interval, 100)
   end
 end

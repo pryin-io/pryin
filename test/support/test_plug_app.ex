@@ -1,7 +1,7 @@
-defmodule Skope.TestPlugApp do
+defmodule PryIn.TestPlugApp do
   import Plug.Conn
   use Plug.Router
-  plug Skope.Plug
+  plug PryIn.Plug
 
   plug :match
   plug :dispatch

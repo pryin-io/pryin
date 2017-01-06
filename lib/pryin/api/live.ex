@@ -1,13 +1,13 @@
-defmodule Skope.Api.Live do
+defmodule PryIn.Api.Live do
   use HTTPoison.Base
   require Logger
 
   @moduledoc """
-  Api module for Skope
+  Api module for PryIn
   """
-  @behaviour Skope.Api
-  @prod_base_url "https://client.skope.io/api/client"
-  @env Application.fetch_env!(:skope, :env)
+  @behaviour PryIn.Api
+  @prod_base_url "https://client.pryin.io/api/client"
+  @env Application.fetch_env!(:pryin, :env)
 
   def send_interactions(interactions) do
     body = %{
@@ -17,10 +17,10 @@ defmodule Skope.Api.Live do
     }
     |> Poison.encode!
 
-    if Application.get_env(:skope, :enabled) do
+    if Application.get_env(:pryin, :enabled) do
       case post("interactions", body) do
         {:ok, %{status_code: 201}} -> :ok
-        response -> Logger.warn "Could not send interactions to Skope: #{inspect response}"
+        response -> Logger.warn "Could not send interactions to PryIn: #{inspect response}"
       end
     end
   end
@@ -35,10 +35,10 @@ defmodule Skope.Api.Live do
   end
 
   defp base_url do
-    Application.get_env(:skope, :base_url, @prod_base_url)
+    Application.get_env(:pryin, :base_url, @prod_base_url)
   end
 
   defp api_key do
-    Application.get_env(:skope, :api_key)
+    Application.get_env(:pryin, :api_key)
   end
 end

@@ -1,5 +1,5 @@
-defmodule Skope.Api.Test do
-  @behaviour Skope.Api
+defmodule PryIn.Api.Test do
+  @behaviour PryIn.Api
   use GenServer
 
   def start_link do

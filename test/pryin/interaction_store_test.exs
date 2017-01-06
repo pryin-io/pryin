@@ -1,12 +1,12 @@
-defmodule Skope.InteractionStoreTest do
-  use Skope.Case
-  alias Skope.{InteractionStore, Interaction}
+defmodule PryIn.InteractionStoreTest do
+  use PryIn.Case
+  alias PryIn.{InteractionStore, Interaction}
 
   setup _ do
-    max_interactions = Application.get_env(:skope, :max_interactions_for_interval)
+    max_interactions = Application.get_env(:pryin, :max_interactions_for_interval)
 
     on_exit fn ->
-      Application.put_env(:skope, :max_interactions_for_interval, max_interactions)
+      Application.put_env(:pryin, :max_interactions_for_interval, max_interactions)
     end
   end
 
@@ -18,7 +18,7 @@ defmodule Skope.InteractionStoreTest do
     end
 
     test "limits number of interactions" do
-      Application.put_env(:skope, :max_interactions_for_interval, 2)
+      Application.put_env(:pryin, :max_interactions_for_interval, 2)
       interaction_1 = %Interaction{start_time: 1000, duration: 1}
       pid_1 = spawn fn -> :timer.sleep(5000) end
       interaction_2 = %Interaction{start_time: 1000, duration: 2}
