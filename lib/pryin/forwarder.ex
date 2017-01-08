@@ -15,6 +15,7 @@ defmodule PryIn.Forwarder do
 
   # CLIENT
 
+  @doc false
   def start_link() do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end

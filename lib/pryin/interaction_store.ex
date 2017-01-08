@@ -6,34 +6,63 @@ defmodule PryIn.InteractionStore do
 
   @moduledoc """
   Stores interactions that will later be forwarded by the forwarder.
-  When a certain amount of interactions is in the store, further interactions will simply be dropped.
-  When the stored interactions are forwarded, the limit is reset.
+
+  When a certain amount of interactions is in the store,
+  further interactions will simply be dropped to avoid overflow.
+
+  When the stored interactions are forwarded,
+  the internal list is cleared and the limit is reset.
+
   This amount can be configured with:
   `config :pryin, :max_interactions_for_interval, 100`
   """
 
   # CLIENT
 
+  @doc false
   def start_link() do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end
 
+  @doc """
+  Start an interaction.
+
+  Adds an interaction - identified by a pid - to the internal interactions list.
+  """
   def start_interaction(pid, interaction) do
     GenServer.cast(__MODULE__, {:start_interaction, pid, interaction})
   end
 
+  @doc """
+  Updates a running interactions data.
+  """
   def set_interaction_data(pid, data) do
     GenServer.cast(__MODULE__, {:set_interaction_data, pid, data})
   end
 
+  @doc """
+  Adds extra data (e.g. measurements) to a running interaction.
+  """
   def add_extra_data(pid, extra_data) do
     GenServer.cast(__MODULE__, {:add_extra_data, pid, extra_data})
   end
 
+  @doc """
+  Finishes a running interaction.
+
+  Finished interactions are moved from the running interactions list
+  to the finished interactions list.
+  They still count towards the `max_interactions_for_interval` limit.
+  When the `Forwarder` polls for interactions, only finished ones are
+  returned.
+  """
   def finish_interaction(pid) do
     GenServer.cast(__MODULE__, {:finish_interaction, pid})
   end
 
+  @doc """
+  Returns whether there is a running interaction for the given `pid`.
+  """
   def has_pid?(pid) do
     result = Wormhole.capture fn ->
       GenServer.call(__MODULE__, {:has_pid, pid})
@@ -45,10 +74,18 @@ defmodule PryIn.InteractionStore do
     end
   end
 
+  @doc """
+  Returns the `field` value of the running interaction with the given `pid`.
+  """
   def get_field(pid, field) do
     GenServer.call(__MODULE__, {:get_field, pid, field})
   end
 
+  @doc """
+  Returns and clears the list of running interactions.
+
+  Called by the forwarder.
+  """
   def pop_finished_interactions do
     GenServer.call(__MODULE__, :pop_finished_interactions)
   end
@@ -56,14 +93,17 @@ defmodule PryIn.InteractionStore do
 
   # for testing
 
+  @doc false
   def get_interaction(pid) do
     GenServer.call(__MODULE__, {:get_interaction, pid})
   end
 
+  @doc false
   def get_state do
     GenServer.call(__MODULE__, :get_state)
   end
 
+  @doc false
   def reset_state do
     GenServer.call(__MODULE__, :reset_state)
   end

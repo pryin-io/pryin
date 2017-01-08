@@ -9,7 +9,14 @@ defmodule PryIn.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      compilers: compilers(Mix.env),
-     deps: deps()]
+     deps: deps(),
+     name: "PryIn",
+     source_url: "https://github.com/pryin-io/pryin",
+     homepage_url: "http://pryin.io",
+     docs: [main: "readme",
+            #logo: "path/to/logo.png",
+            extras: ["README.md"]]
+    ]
   end
 
   # Configuration for the OTP application
@@ -41,6 +48,7 @@ defmodule PryIn.Mixfile do
       {:phoenix, "~> 1.2", optional: true},
       {:ecto, "~> 2.0", optional: true},
       {:httpoison, "~> 0.10.0"},
+      {:ex_doc, "~> 0.14.5", only: :dev},
     ]
   end
 end

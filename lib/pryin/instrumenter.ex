@@ -12,9 +12,9 @@ defmodule PryIn.Instrumenter do
     instrumenters: [PryIn.Instrumenter]
   ```
 
-  To collect instrument custom code, wrap it with the `instrument` macro:
+  To instrument custom code, wrap it with the `instrument` macro:
   ```elixir
-    requre MyApp.Endpoint
+    require MyApp.Endpoint
     MyApp.Endpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
       ...
     end
@@ -25,6 +25,11 @@ defmodule PryIn.Instrumenter do
 
   """
 
+  @doc """
+  Collects metrics about Phoenix view rendering.
+
+  Metrics are only collected inside of tracked interactions.
+  """
   def phoenix_controller_render(:start, _compile_metadata, runtime_metadata) do
     if InteractionStore.has_pid?(self) do
       now = utc_unix_datetime()
@@ -34,7 +39,6 @@ defmodule PryIn.Instrumenter do
       runtime_metadata
     end
   end
-
   def phoenix_controller_render(:stop, time_diff, %{format: format, template: template, offset: offset}) do
     data = %{
       type: "view_rendering",
@@ -47,6 +51,20 @@ defmodule PryIn.Instrumenter do
   end
   def phoenix_controller_render(:stop, _time_diff, _), do: :ok
 
+
+  @doc """
+  Collects metrics about custom functions.
+
+  Wrap any code in an instrumented function to have it's runtime
+  reported to PryIn.
+  The `key` parameter will be present in the web ui, so you can
+  identify the measurement.
+
+  Note that you need to `require` your endpoint before calling
+  the `instrument` macro.
+
+  Metrics are only collected inside of tracked interactions.
+  """
   def pryin(:start, compile_metadata, %{key: key}) do
     if InteractionStore.has_pid?(self) do
       now = utc_unix_datetime()

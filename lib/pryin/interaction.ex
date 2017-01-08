@@ -1,6 +1,7 @@
 defmodule PryIn.Interaction do
   @moduledoc """
   Base struct for interaction based measurements.
+
   All other measurements (DB queries, custom measurements) are children of an interaction.
   """
 
