@@ -1,0 +1,10 @@
+message Data {
+  enum Env {
+    prod = 0;
+    staging = 1;
+    dev = 2;
+  }
+
+  required Env env = 1;
+  repeated Interaction interactions = 2;
+}

@@ -28,18 +28,22 @@ defmodule PryIn.EctoLogger do
   defp do_log(log_entry, pid) do
     if InteractionStore.has_pid?(pid) do
       now = utc_unix_datetime
+      query_time = process_time(log_entry.query_time)
+      decode_time = process_time(log_entry.decode_time)
+      queue_time = process_time(log_entry.queue_time)
+      duration = query_time + decode_time + queue_time
 
-      data = %{
-        type: "ecto_query",
+      data = [
         query: log_entry.query,
-        query_time: process_time(log_entry.query_time),
-        decode_time: process_time(log_entry.decode_time),
-        queue_time: process_time(log_entry.queue_time),
+        query_time: query_time,
+        decode_time: decode_time,
+        queue_time: queue_time,
         source: Map.get(log_entry, :source),
-      }
-      data = Map.put(data, :duration, data.query_time + data.decode_time + data.queue_time)
-      data = Map.put(data, :offset, now - InteractionStore.get_field(pid, :start_time) - data.duration)
-      InteractionStore.add_extra_data(pid, data)
+        duration: duration,
+        offset: now - InteractionStore.get_field(pid, :start_time) - duration
+      ]
+
+      InteractionStore.add_ecto_query(pid, data)
     end
   end
 

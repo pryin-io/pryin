@@ -1,7 +1,7 @@
 defmodule PryIn.Forwarder do
   use GenServer
   require Logger
-  alias PryIn.InteractionStore
+  alias PryIn.{InteractionStore, Data}
 
   @moduledoc """
   Polls for metrics and forwards them to the API.
@@ -11,6 +11,11 @@ defmodule PryIn.Forwarder do
   """
 
   @api Application.get_env(:pryin, :api, PryIn.Api.Live)
+  @env Application.get_env(:pryin, :env)
+  unless @env in [:dev, :staging, :prod], do: raise """
+  PryIn `env` configuration needs to be one of :dev, :staging, :prod.
+  Got #{inspect @env}.
+  """
 
 
   # CLIENT
@@ -31,7 +36,9 @@ defmodule PryIn.Forwarder do
     interactions = InteractionStore.pop_finished_interactions()
 
     if Enum.any?(interactions) do
-      @api.send_interactions(interactions)
+      Data.new(env: @env, interactions: interactions)
+      |> Data.encode
+      |> @api.send_data
     end
     Process.send_after(self, :forward_interactions, forward_interval_millis)
 

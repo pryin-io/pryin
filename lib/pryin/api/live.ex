@@ -5,7 +5,6 @@ defmodule PryIn.Api.Live do
   Live Api module for PryIn.
   """
   @behaviour PryIn.Api
-  @env Application.get_env(:pryin, :env)
 
 
   defmodule HTTP do
@@ -14,12 +13,12 @@ defmodule PryIn.Api.Live do
 
     @prod_base_url "https://client.pryin.io/api/client"
 
-    defp process_request_headers(headers) do
-      [{"Content-Type", "application/json"} | headers]
-    end
-
     defp process_url(path) do
       Path.join([base_url, path])
+    end
+
+    defp process_request_headers(headers) do
+      [{"Content-Type", "application/octet-stream"} | headers]
     end
 
     defp base_url do
@@ -32,16 +31,9 @@ defmodule PryIn.Api.Live do
 
   If `config :pryin, enabled: false`, interactions won't be sent.
   """
-  def send_interactions(interactions) do
-    body = %{
-      api_key: api_key,
-      interactions: interactions,
-      env: @env,
-    }
-    |> Poison.encode!
-
+  def send_data(data) do
     if Application.get_env(:pryin, :enabled) do
-      case HTTP.post("interactions", body) do
+      case HTTP.post("data/#{api_key()}", data) do
         {:ok, %{status_code: 201}} -> :ok
         response -> Logger.warn "Could not send interactions to PryIn: #{inspect response}"
       end

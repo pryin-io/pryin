@@ -23,19 +23,19 @@ defmodule PryIn.Plug do
   @doc false
   def call(conn, _opts) do
     req_start_time = utc_unix_datetime
-    interaction = %Interaction{start_time: req_start_time,
-                               type: "request",
-                               interaction_id: Logger.metadata[:request_id] || generate_interaction_id()}
+    interaction = Interaction.new(start_time: req_start_time,
+      type: :request,
+      interaction_id: Logger.metadata[:request_id] || generate_interaction_id())
 
     InteractionStore.start_interaction(self, interaction)
 
     register_before_send conn, fn conn ->
       if InteractionStore.has_pid?(self) do
         duration = (utc_unix_datetime - req_start_time)
-        interaction_metadata = %{action: conn.private[:phoenix_action],
+        interaction_metadata = %{action: action_name(conn.private[:phoenix_action]),
                                  controller: module_name(conn.private[:phoenix_controller]),
                                  duration: duration,
-                            }
+                                }
         InteractionStore.set_interaction_data(self, interaction_metadata)
         InteractionStore.finish_interaction(self)
       end
@@ -52,6 +52,9 @@ defmodule PryIn.Plug do
   end
   defp module_name(module) when is_binary(module), do: module
   defp module_name(_), do: nil
+
+  defp action_name(nil), do: nil
+  defp action_name(action), do: to_string(action)
 
   defp generate_interaction_id do
     :crypto.strong_rand_bytes(20) |> Base.hex_encode32(case: :lower)

@@ -40,14 +40,13 @@ defmodule PryIn.Instrumenter do
     end
   end
   def phoenix_controller_render(:stop, time_diff, %{format: format, template: template, offset: offset}) do
-    data = %{
-      type: "view_rendering",
+    data = [
       format: format,
       template: template,
       offset: offset,
       duration: System.convert_time_unit(time_diff, :native, :micro_seconds),
-    }
-    InteractionStore.add_extra_data(self, data)
+    ]
+    InteractionStore.add_view_rendering(self, data)
   end
   def phoenix_controller_render(:stop, _time_diff, _), do: :ok
 
@@ -69,19 +68,18 @@ defmodule PryIn.Instrumenter do
     if InteractionStore.has_pid?(self) do
       now = utc_unix_datetime()
       offset = now - InteractionStore.get_field(self, :start_time)
-      %{key: key,
-        type: "custom_metric",
-        offset: offset,
-        file: compile_metadata.file,
-        module: inspect(compile_metadata.module),
-        function: compile_metadata.function,
-        line: compile_metadata.line}
+      [key: key,
+       offset: offset,
+       file: compile_metadata.file,
+       module: inspect(compile_metadata.module),
+       function: compile_metadata.function,
+       line: compile_metadata.line]
     end
   end
   def pryin(:stop, _time_diff, nil), do: :ok
   def pryin(:stop, time_diff, data) do
     duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
-    data = Map.put(data, :duration, duration)
-    InteractionStore.add_extra_data(self, data)
+    data = [{:duration, duration} | data]
+    InteractionStore.add_custom_metric(self, data)
   end
 end

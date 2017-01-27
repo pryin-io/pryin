@@ -18,7 +18,7 @@ defmodule PryIn.PlugTest do
     [interaction] = InteractionStore.get_state.finished_interactions
     assert interaction.start_time
     assert interaction.duration
-    assert interaction.type == "request"
+    assert interaction.type == :request
   end
 
   describe "action and controller" do
@@ -35,7 +35,7 @@ defmodule PryIn.PlugTest do
       get build_conn(), "/test"
 
       [interaction] = InteractionStore.get_state.finished_interactions
-      assert interaction.action == :test_action
+      assert interaction.action == "test_action"
       assert interaction.controller == "PryIn.TestController"
     end
   end

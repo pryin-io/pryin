@@ -2,7 +2,7 @@ defmodule PryIn.InteractionStore do
   use GenServer
   require Logger
   defstruct [size: 0, running_interactions: %{}, monitor_refs: %{}, finished_interactions: []]
-  alias PryIn.Wormhole
+  alias PryIn.{Wormhole, Interaction}
 
   @moduledoc """
   Stores interactions that will later be forwarded by the forwarder.
@@ -41,10 +41,24 @@ defmodule PryIn.InteractionStore do
   end
 
   @doc """
-  Adds extra data (e.g. measurements) to a running interaction.
+  Adds ecto query data to a running interaction.
   """
-  def add_extra_data(pid, extra_data) do
-    GenServer.cast(__MODULE__, {:add_extra_data, pid, extra_data})
+  def add_ecto_query(pid, data) do
+    GenServer.cast(__MODULE__, {:add_ecto_query, pid, data})
+  end
+
+  @doc """
+  Adds view rendering data to a running interaction.
+  """
+  def add_view_rendering(pid, data) do
+    GenServer.cast(__MODULE__, {:add_view_rendering, pid, data})
+  end
+
+  @doc """
+  Adds custom metric data to a running interaction.
+  """
+  def add_custom_metric(pid, data) do
+    GenServer.cast(__MODULE__, {:add_custom_metric, pid, data})
   end
 
   @doc """
@@ -133,13 +147,40 @@ defmodule PryIn.InteractionStore do
     {:noreply, %{state | running_interactions: running_interactions}}
   end
 
-  def handle_cast({:add_extra_data, pid, extra_data}, state) do
+  def handle_cast({:add_ecto_query, pid, data}, state) do
     interaction = Map.get(state.running_interactions, pid)
     case interaction do
       nil ->
         {:noreply, state}
       interaction ->
-        interaction = Map.update!(interaction, :extra_data, &([extra_data | &1]))
+        ecto_query = Interaction.EctoQuery.new(data)
+        interaction = Map.update!(interaction, :ecto_queries, &([ecto_query | &1]))
+        running_interactions = %{state.running_interactions | pid => interaction}
+        {:noreply, %{state | running_interactions: running_interactions}}
+    end
+  end
+
+  def handle_cast({:add_view_rendering, pid, data}, state) do
+    interaction = Map.get(state.running_interactions, pid)
+    case interaction do
+      nil ->
+        {:noreply, state}
+      interaction ->
+        view_rendering = Interaction.ViewRendering.new(data)
+        interaction = Map.update!(interaction, :view_renderings, &([view_rendering | &1]))
+        running_interactions = %{state.running_interactions | pid => interaction}
+        {:noreply, %{state | running_interactions: running_interactions}}
+    end
+  end
+
+  def handle_cast({:add_custom_metric, pid, data}, state) do
+    interaction = Map.get(state.running_interactions, pid)
+    case interaction do
+      nil ->
+        {:noreply, state}
+      interaction ->
+        custom_metric = Interaction.CustomMetric.new(data)
+        interaction = Map.update!(interaction, :custom_metrics, &([custom_metric | &1]))
         running_interactions = %{state.running_interactions | pid => interaction}
         {:noreply, %{state | running_interactions: running_interactions}}
     end

@@ -16,8 +16,7 @@ defmodule PryIn.InstrumenterTest do
     get conn, "/render_test"
 
     [interaction] = InteractionStore.get_state.finished_interactions
-    view_rendering = interaction.extra_data
-    |> Enum.find(& &1.type == "view_rendering")
+    [view_rendering] = interaction.view_renderings
 
     assert view_rendering.offset > 0
     assert view_rendering.duration > 0
@@ -30,8 +29,7 @@ defmodule PryIn.InstrumenterTest do
     get conn, "/custom_instrumentation"
 
     [interaction] = InteractionStore.get_state.finished_interactions
-    custom_instrumentation = interaction.extra_data
-    |> Enum.find(& &1.type == "custom_metric")
+    [custom_instrumentation] = interaction.custom_metrics
 
     assert custom_instrumentation.offset > 0
     assert custom_instrumentation.duration > 0

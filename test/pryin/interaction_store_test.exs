@@ -49,13 +49,29 @@ defmodule PryIn.InteractionStoreTest do
     assert InteractionStore.get_state.running_interactions == %{self => %Interaction{duration: 30}}
   end
 
-  test "add_extra_data" do
-    interaction = %Interaction{}
-    extra_data = %{some: :thing}
+  test "add_ecto_query" do
+    interaction = Interaction.new
+    ecto_query = [duration: 123]
     InteractionStore.start_interaction(self, interaction)
-    InteractionStore.add_extra_data(self, extra_data)
-    assert InteractionStore.get_state.running_interactions == %{self => %Interaction{extra_data: [extra_data]}}
+    InteractionStore.add_ecto_query(self, ecto_query)
+    assert InteractionStore.get_interaction(self).ecto_queries == [Interaction.EctoQuery.new(duration: 123)]
   end
+
+  test "add_view_rendering" do
+    interaction = Interaction.new
+    view_rendering = [duration: 123]
+    InteractionStore.start_interaction(self, interaction)
+    InteractionStore.add_view_rendering(self, view_rendering)
+    assert InteractionStore.get_interaction(self).view_renderings == [Interaction.ViewRendering.new(duration: 123)]
+  end
+  test "add_custom_metric" do
+    interaction = Interaction.new
+    custom_metric = [duration: 123]
+    InteractionStore.start_interaction(self, interaction)
+    InteractionStore.add_custom_metric(self, custom_metric)
+    assert InteractionStore.get_interaction(self).custom_metrics == [Interaction.CustomMetric.new(duration: 123)]
+  end
+
 
   test "finish_request" do
     start_time_micros = 1000
