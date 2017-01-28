@@ -7,4 +7,7 @@ message Data {
 
   required Env env = 1;
   repeated Interaction interactions = 2;
+  required string pryin_version = 3;
+  optional string app_version = 4;
+  optional string node_name = 5;
 }

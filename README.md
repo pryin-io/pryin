@@ -22,6 +22,7 @@
 
     ```elixir
     config :pryin,
+      otp_app: :my_app,
       api_key: "your_secret_api_key",
       enabled: false,
       env: "dev"
