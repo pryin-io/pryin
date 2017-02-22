@@ -28,7 +28,7 @@ defmodule PryIn.Forwarder do
 
   # SERVER
   def init(state) do
-    Process.send_after(self, :forward_interactions, forward_interval_millis)
+    Process.send_after(self(), :forward_interactions, forward_interval_millis())
     {:ok, state}
   end
 
@@ -46,7 +46,7 @@ defmodule PryIn.Forwarder do
       |> Data.encode
       |> @api.send_data
     end
-    Process.send_after(self, :forward_interactions, forward_interval_millis)
+    Process.send_after(self(), :forward_interactions, forward_interval_millis())
 
     {:noreply, state}
   end
@@ -61,11 +61,11 @@ defmodule PryIn.Forwarder do
 
   defp app_version do
     if app_name = Application.get_env(:pryin, :otp_app) do
-      Application.spec(app_name, :vsn) |> to_string
+      Application.spec(app_name, :vsn) |> to_string()
     end
   end
 
   defp node_name do
-    node() |> to_string
+    node() |> to_string()
   end
 end

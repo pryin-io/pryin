@@ -14,7 +14,7 @@ defmodule PryIn.Api.Live do
     @prod_base_url "https://client.pryin.io/api/client"
 
     defp process_url(path) do
-      Path.join([base_url, path])
+      Path.join([base_url(), path])
     end
 
     defp process_request_headers(headers) do

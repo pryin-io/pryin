@@ -31,9 +31,9 @@ defmodule PryIn.Instrumenter do
   Metrics are only collected inside of tracked interactions.
   """
   def phoenix_controller_render(:start, _compile_metadata, runtime_metadata) do
-    if InteractionStore.has_pid?(self) do
+    if InteractionStore.has_pid?(self()) do
       now = utc_unix_datetime()
-      offset = now - InteractionStore.get_field(self, :start_time)
+      offset = now - InteractionStore.get_field(self(), :start_time)
       Map.put(runtime_metadata, :offset, offset)
     else
       runtime_metadata
@@ -46,7 +46,7 @@ defmodule PryIn.Instrumenter do
       offset: offset,
       duration: System.convert_time_unit(time_diff, :native, :micro_seconds),
     ]
-    InteractionStore.add_view_rendering(self, data)
+    InteractionStore.add_view_rendering(self(), data)
   end
   def phoenix_controller_render(:stop, _time_diff, _), do: :ok
 
@@ -65,9 +65,9 @@ defmodule PryIn.Instrumenter do
   Metrics are only collected inside of tracked interactions.
   """
   def pryin(:start, compile_metadata, %{key: key}) do
-    if InteractionStore.has_pid?(self) do
+    if InteractionStore.has_pid?(self()) do
       now = utc_unix_datetime()
-      offset = now - InteractionStore.get_field(self, :start_time)
+      offset = now - InteractionStore.get_field(self(), :start_time)
       [key: key,
        offset: offset,
        file: compile_metadata.file,
@@ -80,6 +80,6 @@ defmodule PryIn.Instrumenter do
   def pryin(:stop, time_diff, data) do
     duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
     data = [{:duration, duration} | data]
-    InteractionStore.add_custom_metric(self, data)
+    InteractionStore.add_custom_metric(self(), data)
   end
 end

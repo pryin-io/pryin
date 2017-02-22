@@ -17,7 +17,7 @@ defmodule PryIn.EctoLogger do
 
   @doc false
   def log(log_entry) do
-    pid = self
+    pid = self()
     Wormhole.capture fn ->
       do_log(log_entry, pid)
     end
@@ -27,7 +27,7 @@ defmodule PryIn.EctoLogger do
 
   defp do_log(log_entry, pid) do
     if InteractionStore.has_pid?(pid) do
-      now = utc_unix_datetime
+      now = utc_unix_datetime()
       query_time = process_time(log_entry.query_time)
       decode_time = process_time(log_entry.decode_time)
       queue_time = process_time(log_entry.queue_time)
