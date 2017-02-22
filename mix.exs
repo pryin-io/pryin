@@ -50,6 +50,7 @@ defmodule PryIn.Mixfile do
       {:httpoison, "~> 0.10.0"},
       {:exprotobuf, "~> 1.2"},
       {:ex_doc, "~> 0.14.5", only: :dev},
+      {:credo, "~> 0.6.1", only: :dev},
     ]
   end
 end
