@@ -13,8 +13,8 @@ defmodule PryIn.InteractionStoreTest do
   describe "start_interaction" do
     test "adds a running interaction" do
       interaction = %Interaction{duration: 1}
-      InteractionStore.start_interaction(self, interaction)
-      assert InteractionStore.get_state.running_interactions == %{self => interaction}
+      InteractionStore.start_interaction(self(), interaction)
+      assert InteractionStore.get_state.running_interactions == %{self() => interaction}
     end
 
     test "limits number of interactions" do
@@ -44,32 +44,32 @@ defmodule PryIn.InteractionStoreTest do
 
   test "set_interaction_data" do
     interaction = %Interaction{duration: 1}
-    InteractionStore.start_interaction(self, interaction)
-    InteractionStore.set_interaction_data(self, %{duration: 30})
-    assert InteractionStore.get_state.running_interactions == %{self => %Interaction{duration: 30}}
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.set_interaction_data(self(), %{duration: 30})
+    assert InteractionStore.get_state.running_interactions == %{self() => %Interaction{duration: 30}}
   end
 
   test "add_ecto_query" do
     interaction = Interaction.new
     ecto_query = [duration: 123]
-    InteractionStore.start_interaction(self, interaction)
-    InteractionStore.add_ecto_query(self, ecto_query)
-    assert InteractionStore.get_interaction(self).ecto_queries == [Interaction.EctoQuery.new(duration: 123)]
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.add_ecto_query(self(), ecto_query)
+    assert InteractionStore.get_interaction(self()).ecto_queries == [Interaction.EctoQuery.new(duration: 123)]
   end
 
   test "add_view_rendering" do
     interaction = Interaction.new
     view_rendering = [duration: 123]
-    InteractionStore.start_interaction(self, interaction)
-    InteractionStore.add_view_rendering(self, view_rendering)
-    assert InteractionStore.get_interaction(self).view_renderings == [Interaction.ViewRendering.new(duration: 123)]
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.add_view_rendering(self(), view_rendering)
+    assert InteractionStore.get_interaction(self()).view_renderings == [Interaction.ViewRendering.new(duration: 123)]
   end
   test "add_custom_metric" do
     interaction = Interaction.new
     custom_metric = [duration: 123]
-    InteractionStore.start_interaction(self, interaction)
-    InteractionStore.add_custom_metric(self, custom_metric)
-    assert InteractionStore.get_interaction(self).custom_metrics == [Interaction.CustomMetric.new(duration: 123)]
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.add_custom_metric(self(), custom_metric)
+    assert InteractionStore.get_interaction(self()).custom_metrics == [Interaction.CustomMetric.new(duration: 123)]
   end
 
 
@@ -77,8 +77,8 @@ defmodule PryIn.InteractionStoreTest do
     start_time_micros = 1000
     start_time_millis = 1
     interaction = %Interaction{start_time: start_time_micros}
-    InteractionStore.start_interaction(self, interaction)
-    InteractionStore.finish_interaction(self)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
     assert InteractionStore.get_state.finished_interactions == [%{interaction | start_time: start_time_millis}]
     assert InteractionStore.get_state.running_interactions == %{}
   end
@@ -133,7 +133,7 @@ defmodule PryIn.InteractionStoreTest do
 
 
   defp wait_until_process_stopped(pid) do
-    timer_ref = Process.send_after(self, :stop_waiting_until_process_stopped, 1000)
+    timer_ref = Process.send_after(self(), :stop_waiting_until_process_stopped, 1000)
     do_wait_until_process_stopped(pid, timer_ref)
   end
   defp do_wait_until_process_stopped(pid, timer_ref) do

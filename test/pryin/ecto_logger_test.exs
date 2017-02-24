@@ -13,13 +13,13 @@ defmodule PryIn.EctoLoggerTest do
   describe "log" do
     test "when no interaction is in the store" do
       @log_entry = EctoLogger.log(@log_entry)
-      refute InteractionStore.has_pid?(self)
+      refute InteractionStore.has_pid?(self())
     end
 
     test "adds extra data to the interaction in the store" do
-      InteractionStore.start_interaction(self, PryIn.Interaction.new(start_time: 1000))
+      InteractionStore.start_interaction(self(), PryIn.Interaction.new(start_time: 1000))
       @log_entry = EctoLogger.log(@log_entry)
-      %{ecto_queries: [data]} = InteractionStore.get_interaction(self)
+      %{ecto_queries: [data]} = InteractionStore.get_interaction(self())
 
       assert data.decode_time == 100
       assert data.duration    == 350
@@ -31,20 +31,20 @@ defmodule PryIn.EctoLoggerTest do
     end
 
     test "can handle nil times" do
-      InteractionStore.start_interaction(self, Interaction.new(start_time: 1000))
+      InteractionStore.start_interaction(self(), Interaction.new(start_time: 1000))
       log_entry = %{@log_entry | query_time: nil}
       ^log_entry = EctoLogger.log(log_entry)
-      %{ecto_queries: [data]} = InteractionStore.get_interaction(self)
+      %{ecto_queries: [data]} = InteractionStore.get_interaction(self())
 
       assert data.query_time  == 0
       assert data.duration    == 300
     end
 
     test "can handle older ecto versions without source in the log entry" do
-      InteractionStore.start_interaction(self, Interaction.new(start_time: 1000))
+      InteractionStore.start_interaction(self(), Interaction.new(start_time: 1000))
       log_entry = Map.delete(@log_entry, :source)
       ^log_entry = EctoLogger.log(log_entry)
-      %{ecto_queries: [data]} = InteractionStore.get_interaction(self)
+      %{ecto_queries: [data]} = InteractionStore.get_interaction(self())
       assert data.source == nil
     end
   end

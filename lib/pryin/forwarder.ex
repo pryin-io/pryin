@@ -44,7 +44,7 @@ defmodule PryIn.Forwarder do
         interactions: interactions
       )
       |> Data.encode
-      |> @api.send_data
+      |> @api.send_interactions
     end
     Process.send_after(self(), :forward_interactions, forward_interval_millis())
 

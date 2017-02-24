@@ -31,9 +31,9 @@ defmodule PryIn.Api.Live do
 
   If `config :pryin, enabled: false`, interactions won't be sent.
   """
-  def send_data(data) do
+  def send_interactions(data) do
     if Application.get_env(:pryin, :enabled) do
-      case HTTP.post("data/#{api_key()}", data) do
+      case HTTP.post("interactions/#{api_key()}", data) do
         {:ok, %{status_code: 201}} -> :ok
         response -> Logger.warn "Could not send interactions to PryIn: #{inspect response}"
       end
