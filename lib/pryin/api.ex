@@ -5,5 +5,6 @@ defmodule PryIn.Api do
   and by `PryIn.Api.Test` for testing.
   """
 
-  @callback send_interactions([PryIn.Interaction.t]) :: :ok
+  @callback send_interactions(PryIn.Data.t) :: :ok
+  @callback send_system_metrics(PryIn.Data.t) :: :ok
 end

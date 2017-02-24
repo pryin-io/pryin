@@ -27,15 +27,29 @@ defmodule PryIn.Api.Live do
   end
 
   @doc """
-  Send a list of interactions to the PryIn Api.
+  Send interaction data to the PryIn Api.
 
-  If `config :pryin, enabled: false`, interactions won't be sent.
+  If `config :pryin, enabled: false`, data won't be sent.
   """
   def send_interactions(data) do
     if Application.get_env(:pryin, :enabled) do
       case HTTP.post("interactions/#{api_key()}", data) do
         {:ok, %{status_code: 201}} -> :ok
         response -> Logger.warn "Could not send interactions to PryIn: #{inspect response}"
+      end
+    end
+  end
+
+  @doc """
+  Send system metric data to the PryIn Api.
+
+  If `config :pryin, enabled: false`, data won't be sent
+  """
+  def send_system_metrics(data) do
+    if Application.get_env(:pryin, :enabled) do
+      case HTTP.post("system_metrics/#{api_key()}", data) do
+        {:ok, %{status_code: 201}} -> :ok
+        response -> Logger.warn "Could not send system metrics to PryIn: #{inspect response}"
       end
     end
   end

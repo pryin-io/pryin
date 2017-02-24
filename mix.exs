@@ -47,9 +47,9 @@ defmodule PryIn.Mixfile do
       {:plug, "~> 1.0", optional: true},
       {:phoenix, "~> 1.2", optional: true},
       {:ecto, "~> 2.0", optional: true},
-      {:httpoison, "~> 0.10.0"},
+      {:httpoison, "~> 0.11"},
       {:exprotobuf, "~> 1.2"},
-      {:ex_doc, "~> 0.14.5", only: :dev},
+      {:ex_doc, "~> 0.15", only: :dev},
       {:credo, "~> 0.6.1", only: :dev},
       {:recon, "~> 2.3"},
     ]

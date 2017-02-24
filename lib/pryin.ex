@@ -9,7 +9,7 @@ defmodule PryIn do
 
   This is the main entry point for the client library.
   It starts an InteractionStore (which holds a list of interaction (e.g. web request) metrics)
-  and a Forwarder (which polls the InteractionStore for metrics and forwards them to the api).
+  and a InteractionForwarder (which polls the InteractionStore for metrics and forwards them to the api).
   """
 
   def start(_type, _args) do
@@ -17,7 +17,8 @@ defmodule PryIn do
 
     children = [
       worker(PryIn.InteractionStore, []),
-      worker(PryIn.Forwarder, []),
+      worker(PryIn.InteractionForwarder, []),
+      worker(PryIn.SystemMetricsCollector, []),
     ]
 
     opts = [strategy: :rest_for_one, name: PryIn.Supervisor]

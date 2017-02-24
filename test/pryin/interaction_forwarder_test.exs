@@ -1,10 +1,10 @@
-defmodule PryIn.ForwarderTest do
+defmodule PryIn.InteractionForwarderTest do
   use PryIn.Case
   alias PryIn.{Interaction, InteractionStore, Data}
 
   test "does not forward an empty interactions list" do
-    send(PryIn.Forwarder, :forward_interactions)
-    refute_receive {:data_sent, _}
+    send(PryIn.InteractionForwarder, :forward_interactions)
+    refute_receive {:interactions_sent, _}
   end
 
   test "sends finished interactions" do
@@ -21,8 +21,8 @@ defmodule PryIn.ForwarderTest do
     InteractionStore.finish_interaction(pid_2)
     InteractionStore.start_interaction(pid_3, interaction_3)
 
-    send(PryIn.Forwarder, :forward_interactions)
-    assert_receive {:data_sent, encoded_data}
+    send(PryIn.InteractionForwarder, :forward_interactions)
+    assert_receive {:interactions_sent, encoded_data}
     data = Data.decode(encoded_data)
     interactions = data.interactions
     assert length(interactions) == 2
@@ -43,11 +43,11 @@ defmodule PryIn.ForwarderTest do
     InteractionStore.start_interaction(pid_1, interaction_1)
     InteractionStore.finish_interaction(pid_1)
 
-    send(PryIn.Forwarder, :forward_interactions)
-    assert_receive {:data_sent, encoded_data}
+    send(PryIn.InteractionForwarder, :forward_interactions)
+    assert_receive {:interactions_sent, encoded_data}
     data = Data.decode(encoded_data)
     assert data.env == :dev
     assert data.pryin_version == "0.1.0"
-    assert data.app_version == "1.2.4" # otp_app ist set to :exprotobuf
+    assert data.app_version == "1.2.5" # otp_app ist set to :exprotobuf
   end
 end

@@ -67,7 +67,7 @@ defmodule PryIn.InteractionStore do
   Finished interactions are moved from the running interactions list
   to the finished interactions list.
   They still count towards the `max_interactions_for_interval` limit.
-  When the `Forwarder` polls for interactions, only finished ones are
+  When the `InteractionForwarder` polls for interactions, only finished ones are
   returned.
   """
   def finish_interaction(pid) do

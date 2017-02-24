@@ -10,6 +10,10 @@ defmodule PryIn.Api.Test do
     GenServer.call(__MODULE__, {:send_interactions, interactions})
   end
 
+  def send_system_metrics(data) do
+    GenServer.call(__MODULE__, {:send_system_metrics, data})
+  end
+
   def subscribe do
     GenServer.call(__MODULE__, {:subscribe, self()})
   end
@@ -22,7 +26,12 @@ defmodule PryIn.Api.Test do
   end
 
   def handle_call({:send_interactions, data}, _from, listeners) do
-    send_to_listeners(listeners, {:data_sent, data})
+    send_to_listeners(listeners, {:interactions_sent, data})
+    {:reply, :ok, listeners}
+  end
+
+  def handle_call({:send_system_metrics, data}, _from, listeners) do
+    send_to_listeners(listeners, {:system_metrics_sent, data})
     {:reply, :ok, listeners}
   end
 
