@@ -23,7 +23,7 @@ defmodule PryIn.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :httpoison, :exprotobuf],
+    [applications: [:logger, :httpoison, :exprotobuf, :recon],
      mod: {PryIn, []}]
   end
 
