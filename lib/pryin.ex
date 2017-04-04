@@ -16,6 +16,7 @@ defmodule PryIn do
     import Supervisor.Spec, warn: false
 
     children = [
+      :hackney_pool.child_spec(:pryin_pool, [timeout: 60_000, max_connections: 5]),
       worker(PryIn.InteractionStore, []),
       worker(PryIn.InteractionForwarder, []),
       worker(PryIn.SystemMetricsCollector, []),

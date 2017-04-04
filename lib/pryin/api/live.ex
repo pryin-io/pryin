@@ -33,7 +33,7 @@ defmodule PryIn.Api.Live do
   """
   def send_interactions(data) do
     if Application.get_env(:pryin, :enabled) do
-      case HTTP.post("interactions/#{api_key()}", data) do
+      case HTTP.post("interactions/#{api_key()}", data, [], [hackney: [pool: :pryin_pool]]) do
         {:ok, %{status_code: 201}} -> :ok
         response -> Logger.warn "Could not send interactions to PryIn: #{inspect response}"
       end
@@ -47,7 +47,7 @@ defmodule PryIn.Api.Live do
   """
   def send_system_metrics(data) do
     if Application.get_env(:pryin, :enabled) do
-      case HTTP.post("system_metrics/#{api_key()}", data) do
+      case HTTP.post("system_metrics/#{api_key()}", data, [], [hackney: [pool: :pryin_pool]]) do
         {:ok, %{status_code: 201}} -> :ok
         response -> Logger.warn "Could not send system metrics to PryIn: #{inspect response}"
       end
