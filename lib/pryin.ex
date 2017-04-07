@@ -1,8 +1,8 @@
 defmodule PryIn do
-  for file <- Path.wildcard("proto/*.proto") do
+  for file <- Path.wildcard("lib/proto/*.proto") do
     @external_resource file
   end
-  use Protobuf, from: Path.wildcard("proto/*.proto")
+  use Protobuf, from: Path.wildcard("lib/proto/*.proto")
   use Application
   @moduledoc """
   PryIn is a performance metrics platform for your Phoenix application.
