@@ -8,6 +8,10 @@ defmodule PryIn.BaseForwarder do
   Got #{inspect @env}.
   """
 
+  @moduledoc """
+  Helper functions for modules forwarding data via API to PryIn.
+  """
+
   def wrap_data(data) do
     [
       env: @env,

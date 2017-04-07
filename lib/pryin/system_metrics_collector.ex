@@ -34,6 +34,7 @@ defmodule PryIn.SystemMetricsCollector do
     {:noreply, state}
   end
 
+  @lint {Credo.Check.Refactor.ABCSize, false}
   defp parse_metrics([{absolutes, increments}]) do
     SystemMetrics.new(
       process_count: absolutes[:process_count],
