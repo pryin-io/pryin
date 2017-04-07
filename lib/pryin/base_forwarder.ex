@@ -1,12 +1,9 @@
 defmodule PryIn.BaseForwarder do
   alias PryIn.Data
+  require Logger
 
   @api Application.get_env(:pryin, :api, PryIn.Api.Live)
-  @env Application.get_env(:pryin, :env)
-  unless @env in [:dev, :staging, :prod], do: raise """
-  PryIn `env` configuration needs to be one of :dev, :staging, :prod.
-  Got #{inspect @env}.
-  """
+  @allowed_envs [:dev, :staging, :prod]
 
   @moduledoc """
   Helper functions for modules forwarding data via API to PryIn.
@@ -14,7 +11,7 @@ defmodule PryIn.BaseForwarder do
 
   def wrap_data(data) do
     [
-      env: @env,
+      env: env(),
       pryin_version: pryin_version(),
       app_version: app_version(),
       node_name: node_name(),
@@ -40,5 +37,20 @@ defmodule PryIn.BaseForwarder do
 
   defp node_name do
     node() |> to_string()
+  end
+
+  defp env do
+    case Application.get_env(:pryin, :env) do
+      env when env in @allowed_envs -> env
+      env when is_binary(env) -> env_to_atom(env)
+      env -> Logger.error "PryIn `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect env}"
+    end
+  end
+
+  defp env_to_atom(binary_env) do
+    case String.to_atom(binary_env) do
+      env when env in @allowed_envs -> env
+      env -> Logger.error "PryIn `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect env}"
+    end
   end
 end
