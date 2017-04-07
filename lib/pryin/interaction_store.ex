@@ -127,7 +127,7 @@ defmodule PryIn.InteractionStore do
 
   def handle_cast({:start_interaction, pid, interaction}, state) do
     if state.size >= max_interactions() do
-      Logger.warn("Dropping interaction #{inspect pid} because buffer is full.")
+      Logger.info("Dropping interaction #{inspect pid} because buffer is full.")
       {:noreply, state}
     else
       monitor_refs = Map.put(state.monitor_refs, pid, Process.monitor(pid))
