@@ -47,7 +47,53 @@ defmodule PryIn.InteractionForwarderTest do
     assert_receive {:interactions_sent, encoded_data}
     data = Data.decode(encoded_data)
     assert data.env == :dev
-    assert data.pryin_version == "0.1.2"
+    assert data.pryin_version == "0.1.3"
     assert data.app_version == "1.2.5" # otp_app ist set to :exprotobuf
+  end
+
+  for env <- ~w(dev staging prod)a do
+    test "allows atom #{env} as env setting" do
+      Application.put_env(:pryin, :env, unquote(env))
+      interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+      InteractionStore.start_interaction(self(), interaction_1)
+      InteractionStore.finish_interaction(self())
+
+      send(PryIn.InteractionForwarder, :forward_interactions)
+      assert_receive {:interactions_sent, encoded_data}
+      data = Data.decode(encoded_data)
+      assert data.env == unquote(env)
+      Application.put_env(:pryin, :env, :dev)
+    end
+  end
+
+  for env <- ~w(dev staging prod) do
+    test "allows string #{env} as env setting" do
+      Application.put_env(:pryin, :env, unquote(env))
+      interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+      InteractionStore.start_interaction(self(), interaction_1)
+      InteractionStore.finish_interaction(self())
+
+      send(PryIn.InteractionForwarder, :forward_interactions)
+      assert_receive {:interactions_sent, encoded_data}
+      data = Data.decode(encoded_data)
+      assert data.env == String.to_atom(unquote(env))
+      Application.put_env(:pryin, :env, :dev)
+    end
+  end
+
+  test "defaults to dev for different values" do
+    Application.put_env(:pryin, :env, "different_env")
+    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+    InteractionStore.start_interaction(self(), interaction_1)
+    InteractionStore.finish_interaction(self())
+
+    captured_log = ExUnit.CaptureLog.capture_log [level: :error], fn ->
+      send(PryIn.InteractionForwarder, :forward_interactions)
+      assert_receive {:interactions_sent, encoded_data}
+      data = Data.decode(encoded_data)
+      assert data.env == :dev
+    end
+    assert captured_log =~ "PryIn `env` configuration needs to be one of [:dev, :staging, :prod]. Got :different_env"
+    Application.put_env(:pryin, :env, :dev)
   end
 end

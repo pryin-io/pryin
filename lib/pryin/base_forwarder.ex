@@ -41,16 +41,21 @@ defmodule PryIn.BaseForwarder do
 
   defp env do
     case Application.get_env(:pryin, :env) do
-      env when env in @allowed_envs -> env
-      env when is_binary(env) -> env_to_atom(env)
-      env -> Logger.error "PryIn `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect env}"
+      val when val in @allowed_envs -> val
+      val when is_binary(val) -> env_to_atom(val)
+      val -> wrong_env(val)
     end
   end
 
   defp env_to_atom(binary_env) do
     case String.to_atom(binary_env) do
-      env when env in @allowed_envs -> env
-      env -> Logger.error "PryIn `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect env}"
+      val when val in @allowed_envs -> val
+      val -> wrong_env(val)
     end
+  end
+
+  defp wrong_env(val) do
+    Logger.error "PryIn `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect val}"
+    :dev
   end
 end
