@@ -8,11 +8,11 @@ defmodule PryIn.InteractionForwarderTest do
   end
 
   test "sends finished interactions" do
-    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request)
+    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
     pid_1 = spawn fn -> :timer.sleep(5000) end
-    interaction_2 = Interaction.new(start_time: 1000, duration: 2, interaction_id: "i2", type: :request)
+    interaction_2 = Interaction.new(start_time: 1000, duration: 2, interaction_id: "i2", type: :request, controller: "SomeController")
     pid_2 = spawn fn -> :timer.sleep(5000) end
-    interaction_3 = Interaction.new(start_time: 1000, duration: 3, interaction_id: "i3", type: :request)
+    interaction_3 = Interaction.new(start_time: 1000, duration: 3, interaction_id: "i3", type: :request, controller: "SomeController")
     pid_3 = spawn fn -> :timer.sleep(5000) end
 
     InteractionStore.start_interaction(pid_1, interaction_1)
@@ -37,7 +37,7 @@ defmodule PryIn.InteractionForwarderTest do
   end
 
   test "includes metadata" do
-    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request)
+    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
     pid_1 = spawn fn -> :timer.sleep(5000) end
 
     InteractionStore.start_interaction(pid_1, interaction_1)

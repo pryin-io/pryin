@@ -192,12 +192,19 @@ defmodule PryIn.InteractionStore do
     {finished_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
     finished_interaction = Map.update!(finished_interaction, :start_time, &trunc(&1 / 1000))
 
-    Logger.debug("finished interaction: #{inspect finished_interaction}")
-
-    {:noreply, %{state |
-                 running_interactions: running_interactions,
-                 monitor_refs: remaining_monitor_refs,
-                 finished_interactions: [finished_interaction | state.finished_interactions]}}
+    if finished_interaction.controller || finished_interaction.action do
+      Logger.debug("finished interaction: #{inspect finished_interaction}")
+      {:noreply, %{state |
+                   running_interactions: running_interactions,
+                   monitor_refs: remaining_monitor_refs,
+                   finished_interactions: [finished_interaction | state.finished_interactions]}}
+    else
+      Logger.debug("dropped interaction without controller and action: #{inspect finished_interaction}")
+      {:noreply, %{state |
+                   running_interactions: running_interactions,
+                   monitor_refs: remaining_monitor_refs,
+                   finished_interactions: state.finished_interactions}}
+    end
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do

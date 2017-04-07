@@ -19,11 +19,11 @@ defmodule PryIn.InteractionStoreTest do
 
     test "limits number of interactions" do
       Application.put_env(:pryin, :max_interactions_for_interval, 2)
-      interaction_1 = %Interaction{start_time: 1000, duration: 1}
+      interaction_1 = %Interaction{start_time: 1000, duration: 1, controller: "SomeController"}
       pid_1 = spawn fn -> :timer.sleep(5000) end
-      interaction_2 = %Interaction{start_time: 1000, duration: 2}
+      interaction_2 = %Interaction{start_time: 1000, duration: 2, controller: "SomeController"}
       pid_2 = spawn fn -> :timer.sleep(5000) end
-      interaction_3 = %Interaction{start_time: 1000, duration: 3}
+      interaction_3 = %Interaction{start_time: 1000, duration: 3, controller: "SomeController"}
       pid_3 = spawn fn -> :timer.sleep(5000) end
 
       InteractionStore.start_interaction(pid_1, interaction_1)
@@ -73,13 +73,25 @@ defmodule PryIn.InteractionStoreTest do
   end
 
 
-  test "finish_request" do
+  test "finish_interaction with controller and action" do
     start_time_micros = 1000
     start_time_millis = 1
     interaction = %Interaction{start_time: start_time_micros}
     InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.set_interaction_data(self(), %{controller: "SomeController", action: "some_action"})
     InteractionStore.finish_interaction(self())
-    assert InteractionStore.get_state.finished_interactions == [%{interaction | start_time: start_time_millis}]
+    assert InteractionStore.get_state.finished_interactions == [%{interaction | controller: "SomeController",
+                                                                  action: "some_action",
+                                                                  start_time: start_time_millis}]
+    assert InteractionStore.get_state.running_interactions == %{}
+  end
+
+  test "finish_interaction drops an interaction without controller and action" do
+    start_time_micros = 1000
+    interaction = %Interaction{start_time: start_time_micros}
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
     assert InteractionStore.get_state.running_interactions == %{}
   end
 
@@ -117,9 +129,9 @@ defmodule PryIn.InteractionStoreTest do
   end
 
   test "pop_finished_interactions" do
-    interaction_1 = %Interaction{start_time: 1000}
+    interaction_1 = %Interaction{start_time: 1000, controller: "SomeController"}
     pid_1 = spawn fn -> :timer.sleep(5000) end
-    interaction_2 = %Interaction{start_time: 1000}
+    interaction_2 = %Interaction{start_time: 1000, controller: "SomeController"}
     pid_2 = spawn fn -> :timer.sleep(5000) end
 
     InteractionStore.start_interaction(pid_1, interaction_1)
