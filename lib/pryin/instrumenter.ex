@@ -1,6 +1,6 @@
 defmodule PryIn.Instrumenter do
-  alias PryIn.InteractionStore
-  import PryIn.TimeHelper
+  alias PryIn.{InteractionStore, Interaction}
+  import PryIn.{TimeHelper, InteractionHelper}
 
   @moduledoc """
   Collects metrics about view rendering and allows for custom instrumentation
@@ -49,6 +49,29 @@ defmodule PryIn.Instrumenter do
     InteractionStore.add_view_rendering(self(), data)
   end
   def phoenix_controller_render(:stop, _time_diff, _), do: :ok
+
+
+  @doc """
+  Collect metrics about channel `handle_in` calls.
+  """
+  def phoenix_channel_receive(:start, _compile_metadata, runtime_metadata) do
+    interaction = Interaction.new(start_time: utc_unix_datetime(),
+      type: :channel_receive,
+      interaction_id: generate_interaction_id(),
+      channel: module_name(runtime_metadata[:socket].channel),
+      topic: runtime_metadata[:socket].topic,
+      event: runtime_metadata[:event])
+    InteractionStore.start_interaction(self(), interaction)
+  end
+  def phoenix_channel_receive(:stop, time_diff, _metadata) do
+    if InteractionStore.has_pid?(self()) do
+      duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
+      interaction_metadata = %{duration: duration}
+      InteractionStore.set_interaction_data(self(), interaction_metadata)
+      InteractionStore.finish_interaction(self())
+    end
+  end
+
 
 
   @doc """

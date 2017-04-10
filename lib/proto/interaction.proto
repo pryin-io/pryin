@@ -1,6 +1,7 @@
 message Interaction {
   enum Type {
     request = 0;
+    channel_receive = 1;
   }
 
   message EctoQuery {
@@ -40,4 +41,7 @@ message Interaction {
   repeated EctoQuery ecto_queries = 7;
   repeated ViewRendering view_renderings = 8;
   repeated CustomMetric custom_metrics = 9;
+  optional string channel = 10;
+  optional string topic = 11;
+  optional string event = 12;
 }

@@ -1,6 +1,8 @@
 defmodule PryIn.InstrumenterTest do
   use PryIn.Case
   use Phoenix.ConnTest
+  alias Phoenix.ChannelTest
+  require ChannelTest
   require PryIn.TestEndpoint
   alias PryIn.InteractionStore
 
@@ -47,5 +49,40 @@ defmodule PryIn.InstrumenterTest do
         :timer.sleep(1)
       end
     end) == ""
+  end
+
+  test "channel handle_in instrumentation" do
+    {:ok, socket} = ChannelTest.connect(PryIn.TestSocket, %{})
+    {:ok, _, socket} = ChannelTest.subscribe_and_join(socket, "test:topic", %{})
+    ref = ChannelTest.push(socket, "test:msg", %{})
+    ChannelTest.assert_reply ref, :ok
+
+    wait_until fn ->
+      [interaction] = InteractionStore.get_state.finished_interactions
+      assert interaction.type           == :channel_receive
+      assert interaction.interaction_id != nil
+      assert interaction.channel        == "PryIn.TestChannel"
+      assert interaction.topic          == "test:topic"
+      assert interaction.event          == "test:msg"
+      assert interaction.start_time     != nil
+      assert interaction.duration       != nil
+    end
+  end
+
+  defp wait_until(predicate_fn) do
+    timer_ref = Process.send_after(self(), :stop_waiting_until, 1000)
+    do_wait_until(predicate_fn, timer_ref)
+  end
+  defp do_wait_until(predicate_fn, timer_ref) do
+    receive do
+      :stop_waiting_until -> raise "timeout waiting"
+    after 0 ->
+      try do
+        predicate_fn.()
+        Process.cancel_timer(timer_ref)
+      rescue
+        [ExUnit.AssertionError, MatchError] -> do_wait_until(predicate_fn, timer_ref)
+      end
+    end
   end
 end

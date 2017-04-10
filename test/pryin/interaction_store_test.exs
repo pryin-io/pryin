@@ -12,18 +12,18 @@ defmodule PryIn.InteractionStoreTest do
 
   describe "start_interaction" do
     test "adds a running interaction" do
-      interaction = %Interaction{duration: 1}
+      interaction = Factory.build(:request, duration: 1)
       InteractionStore.start_interaction(self(), interaction)
       assert InteractionStore.get_state.running_interactions == %{self() => interaction}
     end
 
     test "limits number of interactions" do
       Application.put_env(:pryin, :max_interactions_for_interval, 2)
-      interaction_1 = %Interaction{start_time: 1000, duration: 1, controller: "SomeController"}
+      interaction_1 = Factory.build(:request, start_time: 1000, duration: 1, controller: "SomeController")
       pid_1 = spawn fn -> :timer.sleep(5000) end
-      interaction_2 = %Interaction{start_time: 1000, duration: 2, controller: "SomeController"}
+      interaction_2 = Factory.build(:request, start_time: 1000, duration: 2, controller: "SomeController")
       pid_2 = spawn fn -> :timer.sleep(5000) end
-      interaction_3 = %Interaction{start_time: 1000, duration: 3, controller: "SomeController"}
+      interaction_3 = Factory.build(:request, start_time: 1000, duration: 3, controller: "SomeController")
       pid_3 = spawn fn -> :timer.sleep(5000) end
 
       InteractionStore.start_interaction(pid_1, interaction_1)
@@ -43,14 +43,14 @@ defmodule PryIn.InteractionStoreTest do
   end
 
   test "set_interaction_data" do
-    interaction = %Interaction{duration: 1}
+    interaction = Factory.build(:request, duration: 1)
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.set_interaction_data(self(), %{duration: 30})
-    assert InteractionStore.get_state.running_interactions == %{self() => %Interaction{duration: 30}}
+    assert InteractionStore.get_state.running_interactions == %{self() => %{interaction | duration: 30}}
   end
 
   test "add_ecto_query" do
-    interaction = Interaction.new
+    interaction = Factory.build(:request)
     ecto_query = [duration: 123]
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.add_ecto_query(self(), ecto_query)
@@ -58,14 +58,14 @@ defmodule PryIn.InteractionStoreTest do
   end
 
   test "add_view_rendering" do
-    interaction = Interaction.new
+    interaction = Factory.build(:request)
     view_rendering = [duration: 123]
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.add_view_rendering(self(), view_rendering)
     assert InteractionStore.get_interaction(self()).view_renderings == [Interaction.ViewRendering.new(duration: 123)]
   end
   test "add_custom_metric" do
-    interaction = Interaction.new
+    interaction = Factory.build(:request)
     custom_metric = [duration: 123]
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.add_custom_metric(self(), custom_metric)
@@ -76,7 +76,7 @@ defmodule PryIn.InteractionStoreTest do
   test "finish_interaction with controller and action" do
     start_time_micros = 1000
     start_time_millis = 1
-    interaction = %Interaction{start_time: start_time_micros}
+    interaction = Factory.build(:request, start_time: start_time_micros)
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.set_interaction_data(self(), %{controller: "SomeController", action: "some_action"})
     InteractionStore.finish_interaction(self())
@@ -86,17 +86,25 @@ defmodule PryIn.InteractionStoreTest do
     assert InteractionStore.get_state.running_interactions == %{}
   end
 
-  test "finish_interaction drops an interaction without controller and action" do
-    start_time_micros = 1000
-    interaction = %Interaction{start_time: start_time_micros}
+  test "finish_interaction drops a request without controller and action" do
+    interaction = Factory.build(:request, controller: nil, action: nil)
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.finish_interaction(self())
     assert InteractionStore.get_state.finished_interactions == []
     assert InteractionStore.get_state.running_interactions == %{}
   end
 
+  test "finish_interaction does not drop a channel receive without controller and action" do
+    interaction = Factory.build(:channel_receive)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    interaction_id = interaction.interaction_id
+    assert [%{interaction_id: ^interaction_id}] = InteractionStore.get_state.finished_interactions
+    assert InteractionStore.get_state.running_interactions == %{}
+  end
+
   test "handle DOWN for an interaction process" do
-    interaction = %Interaction{duration: 1}
+    interaction = Factory.build(:request, duration: 1)
     pid = spawn fn -> :timer.sleep(5000) end
     InteractionStore.start_interaction(pid, interaction)
     assert InteractionStore.get_state.running_interactions == %{pid => interaction}
@@ -109,7 +117,7 @@ defmodule PryIn.InteractionStoreTest do
   end
 
   test "has_pid" do
-    interaction = %Interaction{start_time: 1000}
+    interaction = Factory.build(:request, start_time: 1000)
     pid = spawn fn -> :timer.sleep(5000) end
     refute InteractionStore.has_pid?(pid)
 
@@ -121,7 +129,7 @@ defmodule PryIn.InteractionStoreTest do
   end
 
   test "get_field" do
-    interaction = %Interaction{start_time: 1000}
+    interaction = Factory.build(:request, start_time: 1000)
     pid = spawn fn -> :timer.sleep(5000) end
 
     InteractionStore.start_interaction(pid, interaction)
@@ -129,9 +137,9 @@ defmodule PryIn.InteractionStoreTest do
   end
 
   test "pop_finished_interactions" do
-    interaction_1 = %Interaction{start_time: 1000, controller: "SomeController"}
+    interaction_1 = Factory.build(:request, start_time: 1000)
     pid_1 = spawn fn -> :timer.sleep(5000) end
-    interaction_2 = %Interaction{start_time: 1000, controller: "SomeController"}
+    interaction_2 = Factory.build(:request, start_time: 1000)
     pid_2 = spawn fn -> :timer.sleep(5000) end
 
     InteractionStore.start_interaction(pid_1, interaction_1)

@@ -3,6 +3,7 @@ defmodule PryIn.Case do
 
   using do
     quote do
+      alias PryIn.Factory
     end
   end
 

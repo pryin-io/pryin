@@ -69,6 +69,8 @@ defmodule PryIn.InteractionStore do
   They still count towards the `max_interactions_for_interval` limit.
   When the `InteractionForwarder` polls for interactions, only finished ones are
   returned.
+  If the interaction is a request and has neither controller nor action set, it
+  is dropped.
   """
   def finish_interaction(pid) do
     GenServer.cast(__MODULE__, {:finish_interaction, pid})
@@ -192,7 +194,7 @@ defmodule PryIn.InteractionStore do
     {finished_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
     finished_interaction = Map.update!(finished_interaction, :start_time, &trunc(&1 / 1000))
 
-    if finished_interaction.controller || finished_interaction.action do
+    if forward_interaction?(finished_interaction) do
       Logger.debug("finished interaction: #{inspect finished_interaction}")
       {:noreply, %{state |
                    running_interactions: running_interactions,
@@ -257,4 +259,9 @@ defmodule PryIn.InteractionStore do
   defp max_interactions do
     Application.get_env(:pryin, :max_interactions_for_interval, 100)
   end
+
+  defp forward_interaction?(interaction = %{type: :request}) do
+    interaction.controller || interaction.action
+  end
+  defp forward_interaction?(%{type: :channel_receive}), do: true
 end

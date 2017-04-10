@@ -1,7 +1,7 @@
 defmodule PryIn.Plug do
   @behaviour Plug
   import Plug.Conn, only: [register_before_send: 2]
-  import PryIn.TimeHelper
+  import PryIn.{TimeHelper, InteractionHelper}
   alias PryIn.{InteractionStore, Interaction}
 
   @moduledoc """
@@ -44,19 +44,6 @@ defmodule PryIn.Plug do
     end
   end
 
-  defp module_name(nil), do: nil
-  defp module_name(module) when is_atom(module) do
-    module
-    |> Atom.to_string()
-    |> String.replace(~r/^Elixir\./, "")
-  end
-  defp module_name(module) when is_binary(module), do: module
-  defp module_name(_), do: nil
-
   defp action_name(nil), do: nil
   defp action_name(action), do: to_string(action)
-
-  defp generate_interaction_id do
-    :crypto.strong_rand_bytes(20) |> Base.hex_encode32(case: :lower)
-  end
 end

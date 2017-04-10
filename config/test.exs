@@ -7,6 +7,8 @@ config :pryin,
   collect_system_metrics: false
 
 config :phoenix, PryIn.TestEndpoint,
-  instrumenters: [PryIn.Instrumenter]
+  instrumenters: [PryIn.Instrumenter],
+  pubsub: [name: PryIn.PubSub,
+           adapter: Phoenix.PubSub.PG2]
 
 config :logger, level: :warn
