@@ -8,7 +8,7 @@ defmodule PryIn.SystemMetricsCollectorTest do
     assert_receive {:system_metrics_sent, encoded_data}
     data = Data.decode(encoded_data)
     assert data.env == :dev
-    assert data.pryin_version == "0.1.3"
+    assert data.pryin_version == "0.1.4"
     assert data.app_version == "1.2.5" # otp_app ist set to :exprotobuf
     assert is_number(data.system_metrics.process_count)
     assert is_number(data.system_metrics.run_queue)
