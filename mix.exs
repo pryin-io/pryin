@@ -13,7 +13,7 @@ defmodule PryIn.Mixfile do
      name: "PryIn",
      source_url: "https://github.com/pryin-io/pryin",
      homepage_url: "http://pryin.io",
-     description: "PryIn is an performance monitoring platform for your Phoenix application. Currently in closed alpha.",
+     description: "PryIn is a performance monitoring platform for your Phoenix application. Currently in closed alpha.",
      package: package(),
      docs: [main: "readme",
             #logo: "path/to/logo.png",
