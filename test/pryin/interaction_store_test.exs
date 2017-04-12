@@ -27,16 +27,12 @@ defmodule PryIn.InteractionStoreTest do
       pid_3 = spawn fn -> :timer.sleep(5000) end
 
       InteractionStore.start_interaction(pid_1, interaction_1)
-      assert InteractionStore.get_state.size == 1
       InteractionStore.start_interaction(pid_2, interaction_2)
-      assert InteractionStore.get_state.size == 2
       InteractionStore.start_interaction(pid_3, interaction_3)
-      assert InteractionStore.get_state.size == 2
       assert Map.keys(InteractionStore.get_state.running_interactions) == [pid_1, pid_2]
 
       InteractionStore.finish_interaction(pid_1)
       InteractionStore.start_interaction(pid_3, interaction_3)
-      assert InteractionStore.get_state.size == 2
       assert Map.keys(InteractionStore.get_state.running_interactions) == [pid_2]
       assert InteractionStore.get_state.finished_interactions == [%{interaction_1 | start_time: 1}]
     end
@@ -100,12 +96,10 @@ defmodule PryIn.InteractionStoreTest do
     pid = spawn fn -> :timer.sleep(5000) end
     InteractionStore.start_interaction(pid, interaction)
     assert InteractionStore.get_state.running_interactions == %{pid => interaction}
-    assert InteractionStore.get_state.size == 1
 
     Process.exit(pid, :kill)
     wait_until_process_stopped(pid)
     assert InteractionStore.get_state.running_interactions == %{}
-    assert InteractionStore.get_state.size == 0
   end
 
   test "has_pid" do
@@ -139,7 +133,6 @@ defmodule PryIn.InteractionStoreTest do
     InteractionStore.finish_interaction(pid_1)
 
     assert InteractionStore.pop_finished_interactions == [%{interaction_1 | start_time: 1}]
-    assert InteractionStore.get_state.size == 1
     assert InteractionStore.get_state.finished_interactions == []
   end
 
