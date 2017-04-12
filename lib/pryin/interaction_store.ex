@@ -1,7 +1,7 @@
 defmodule PryIn.InteractionStore do
   use GenServer
   require Logger
-  defstruct [size: 0, running_interactions: %{}, monitor_refs: %{}, finished_interactions: []]
+  defstruct [running_interactions: %{}, monitor_refs: %{}, finished_interactions: []]
   alias PryIn.{Wormhole, Interaction}
 
   @moduledoc """
@@ -128,7 +128,7 @@ defmodule PryIn.InteractionStore do
   # SERVER
 
   def handle_cast({:start_interaction, pid, interaction}, state) do
-    if state.size >= max_interactions() do
+    if stored_interacions_count(state) >= max_interactions() do
       Logger.info("Dropping interaction #{inspect pid} because buffer is full.")
       {:noreply, state}
     else
@@ -136,8 +136,7 @@ defmodule PryIn.InteractionStore do
       running_interactions = Map.put(state.running_interactions, pid, interaction)
       {:noreply, %{state |
                    running_interactions: running_interactions,
-                   monitor_refs: monitor_refs,
-                   size: state.size + 1}}
+                   monitor_refs: monitor_refs}}
     end
   end
 
@@ -213,17 +212,13 @@ defmodule PryIn.InteractionStore do
     {monitor_ref, remaining_monitor_refs} = Map.pop(state.monitor_refs, pid)
     unless is_nil(monitor_ref), do: Process.demonitor(monitor_ref)
     {down_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
-    size = if down_interaction do
+    if down_interaction do
       Logger.warn("[InteractionStore] Interaction #{inspect pid} down before finished.")
-      state.size - 1
-    else
-      state.size
     end
 
     {:noreply, %{state |
                  running_interactions: running_interactions,
-                 monitor_refs: remaining_monitor_refs,
-                 size: size}}
+                 monitor_refs: remaining_monitor_refs}}
   end
 
   def handle_call({:has_pid, pid}, _from, state) do
@@ -251,9 +246,7 @@ defmodule PryIn.InteractionStore do
   end
 
   def handle_call(:pop_finished_interactions, _from, state) do
-    {:reply, state.finished_interactions, %{state |
-                         finished_interactions: [],
-                         size: state.size - length(state.finished_interactions)}}
+    {:reply, state.finished_interactions, %{state | finished_interactions: []}}
   end
 
   defp max_interactions do
@@ -264,4 +257,8 @@ defmodule PryIn.InteractionStore do
     interaction.controller || interaction.action
   end
   defp forward_interaction?(%{type: :channel_receive}), do: true
+
+  defp stored_interacions_count(%{finished_interactions: finished_interactions, running_interactions: running_interactions}) do
+    length(Map.keys(running_interactions)) + length(finished_interactions)
+  end
 end

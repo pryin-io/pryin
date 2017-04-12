@@ -47,7 +47,7 @@ defmodule PryIn.InteractionForwarderTest do
     assert_receive {:interactions_sent, encoded_data}
     data = Data.decode(encoded_data)
     assert data.env == :dev
-    assert data.pryin_version == "0.1.3"
+    assert data.pryin_version == "0.1.4"
     assert data.app_version == "1.2.5" # otp_app ist set to :exprotobuf
   end
 
