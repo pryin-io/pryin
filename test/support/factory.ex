@@ -7,8 +7,8 @@ defmodule PryIn.Factory do
       interaction_id: sequence(:request_id, &"request_id-#{&1}"),
       action: "some_action",
       controller: "SomeApp.SomeController",
-      duration: 12345,
-      start_time: 1491848831944116,
+      duration: 12_345,
+      start_time: 1_491_848_831_944_116,
     }
   end
 
@@ -19,8 +19,19 @@ defmodule PryIn.Factory do
       channel: "MyApp.SomeChannel",
       topic: "some:topic",
       event: "some:event",
-      duration: 12345,
-      start_time: 1491848831944116,
+      duration: 12_345,
+      start_time: 1_491_848_831_944_116,
+    }
+  end
+
+  def channel_join_factory do
+    %PryIn.Interaction{
+      type: :channel_join,
+      interaction_id: sequence(:request_id, &"request_id-#{&1}"),
+      channel: "MyApp.SomeChannel",
+      topic: "some:topic",
+      duration: 12_345,
+      start_time: 1_491_848_831_944_116,
     }
   end
 end

@@ -51,9 +51,23 @@ defmodule PryIn.InstrumenterTest do
     end) == ""
   end
 
+  test "channel join instrumentation" do
+    {:ok, socket} = ChannelTest.connect(PryIn.TestSocket, %{})
+    {:ok, _, _} = ChannelTest.subscribe_and_join(socket, "test:topic", %{})
+    [interaction] = InteractionStore.get_state.finished_interactions
+
+    assert interaction.type           == :channel_join
+    assert interaction.interaction_id != nil
+    assert interaction.channel        == "PryIn.TestChannel"
+    assert interaction.topic          == "test:topic"
+    assert interaction.start_time     != nil
+    assert interaction.duration       != nil
+  end
+
   test "channel handle_in instrumentation" do
     {:ok, socket} = ChannelTest.connect(PryIn.TestSocket, %{})
     {:ok, _, socket} = ChannelTest.subscribe_and_join(socket, "test:topic", %{})
+    [_] = InteractionStore.pop_finished_interactions()
     ref = ChannelTest.push(socket, "test:msg", %{})
     ChannelTest.assert_reply ref, :ok
 

@@ -257,6 +257,7 @@ defmodule PryIn.InteractionStore do
     interaction.controller || interaction.action
   end
   defp forward_interaction?(%{type: :channel_receive}), do: true
+  defp forward_interaction?(%{type: :channel_join}), do: true
 
   defp stored_interacions_count(%{finished_interactions: finished_interactions, running_interactions: running_interactions}) do
     length(Map.keys(running_interactions)) + length(finished_interactions)

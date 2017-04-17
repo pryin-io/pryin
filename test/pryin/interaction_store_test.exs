@@ -99,6 +99,15 @@ defmodule PryIn.InteractionStoreTest do
     assert InteractionStore.get_state.running_interactions == %{}
   end
 
+  test "finish_interaction does not drop a channel join without controller and action" do
+    interaction = Factory.build(:channel_join)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    interaction_id = interaction.interaction_id
+    assert [%{interaction_id: ^interaction_id}] = InteractionStore.get_state.finished_interactions
+    assert InteractionStore.get_state.running_interactions == %{}
+  end
+
   test "handle DOWN for an interaction process" do
     interaction = Factory.build(:request, duration: 1)
     pid = spawn fn -> :timer.sleep(5000) end

@@ -73,6 +73,27 @@ defmodule PryIn.Instrumenter do
   end
 
 
+  @doc """
+  Collect metrics about channel joins.
+  """
+  def phoenix_channel_join(:start, _compile_metadata, runtime_metadata) do
+    interaction = Interaction.new(start_time: utc_unix_datetime(),
+      type: :channel_join,
+      interaction_id: generate_interaction_id(),
+      channel: module_name(runtime_metadata[:socket].channel),
+      topic: runtime_metadata[:socket].topic)
+    InteractionStore.start_interaction(self(), interaction)
+  end
+  def phoenix_channel_join(:stop, time_diff, _metadata) do
+    if InteractionStore.has_pid?(self()) do
+      duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
+      interaction_metadata = %{duration: duration}
+      InteractionStore.set_interaction_data(self(), interaction_metadata)
+      InteractionStore.finish_interaction(self())
+    end
+  end
+
+
 
   @doc """
   Collects metrics about custom functions.

@@ -2,6 +2,7 @@ message Interaction {
   enum Type {
     request = 0;
     channel_receive = 1;
+    channel_join = 2;
   }
 
   message EctoQuery {
