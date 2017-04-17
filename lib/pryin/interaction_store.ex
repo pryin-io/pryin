@@ -211,10 +211,7 @@ defmodule PryIn.InteractionStore do
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
     {monitor_ref, remaining_monitor_refs} = Map.pop(state.monitor_refs, pid)
     unless is_nil(monitor_ref), do: Process.demonitor(monitor_ref)
-    {down_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
-    if down_interaction do
-      Logger.warn("[InteractionStore] Interaction #{inspect pid} down before finished.")
-    end
+    {_down_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
 
     {:noreply, %{state |
                  running_interactions: running_interactions,
