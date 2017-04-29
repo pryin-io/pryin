@@ -13,6 +13,7 @@ defmodule PryIn do
   """
 
   def start(_type, _args) do
+    a = 100000000000
     import Supervisor.Spec, warn: false
 
     children = [
