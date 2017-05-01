@@ -1,5 +1,7 @@
 # PryIn
 
+[![Build Status](https://travis-ci.org/pryin-io/pryin.svg?branch=master)](https://travis-ci.org/pryin-io/pryin)
+[![Hex pm](http://img.shields.io/hexpm/v/pryin.svg?style=flat)](https://hex.pm/packages/pryin)
 
 [PryIn](https://pryin.io) is a performance metrics platform for your Phoenix application.
 
