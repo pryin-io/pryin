@@ -54,6 +54,7 @@ defmodule PryIn.SystemMetricsCollector do
       time: DateTime.utc_now |> DateTime.to_unix(:milliseconds),
     )
   end
+  _ = @lint
 
   defp forward_metrics(system_metrics) do
     [system_metrics: system_metrics]
