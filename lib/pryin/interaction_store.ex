@@ -81,7 +81,9 @@ defmodule PryIn.InteractionStore do
   """
   def has_pid?(pid) do
     result = Wormhole.capture fn ->
-      GenServer.call(__MODULE__, {:has_pid, pid})
+      if Process.whereis(__MODULE__) do
+        GenServer.call(__MODULE__, {:has_pid, pid})
+      end
     end
 
     case result do
