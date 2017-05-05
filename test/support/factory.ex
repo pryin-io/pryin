@@ -34,4 +34,15 @@ defmodule PryIn.Factory do
       start_time: 1_491_848_831_944_116,
     }
   end
+
+  def custom_trace_factory do
+    %PryIn.Interaction{
+      type: :custom_trace,
+      interaction_id: sequence(:request_id, &"custom_trace_id-#{&1}"),
+      custom_group: "some group",
+      custom_key: "some_key",
+      duration: 12_345,
+      start_time: 1_491_848_831_944_116,
+    }
+  end
 end
