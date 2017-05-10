@@ -9,9 +9,10 @@ defmodule PryIn.CustomTrace do
   Start a trace with `PryIn.CustomTrace.start(group: "workers", key: "daily_email_worker")`
   and when the worker is done, call the finish function in the same process with `PryIn.CustomTrace.finish()`.
 
-  Group and key are values you can choose freely. They will appear in the web interface and allow you to aggregate
-  and compare traces over time. Good values for `group` can be for example `"background_jobs"` or `absinthe_requests`
-  if you're using that for GraphQl. Examples for key would then be `"daily_email_job"` or `"all_todos_query"`.
+  `group` and `key` are values you can choose freely. They will appear in the web interface and allow you to aggregate
+  and compare traces over time. A `group` can be added to the sidebar navigation for easy access.
+  Good values for `group` can be for example `"background_jobs"` or `absinthe_requests`
+  if you're using that for GraphQl. Examples for `key` could then be `"daily_email_job"` or `"all_todos_query"`.
 
   Any metric that is associated with the process `PryIn.CustomTrace.start` was called in will
   be recorded.
