@@ -61,22 +61,19 @@ plug MyApp.Router
     To track how long calls to the Foobar Api take, for example, do the following:
 
 ```elixir
-defmodule MyApp.SomeController do
+defmodule MyApp.MyModule do
   require MyApp.Endpoint
   ...
 
-  def my_action(conn, params) do
-    ...
-    api_call_result =
-      MyApp.Endpoint.instrument(:pryin, %{key: "foobar_api_call"}, fn ->
-        FoobarApi.call(some_arguments)
+  def my_function() do
+    MyApp.Endpoint.instrument(:pryin, %{key: "foobar_api_call"}, fn ->
+      FoobarApi.call(some_arguments)
     end)
-    ...
   end
 
   ...
 end
 ```
 
-    After this, Foobar Api call will be tracked under the key `foobar_api_call`.
-    Note that you need to `require` your endpoint before invoking the `instrument` macro.
+  After this, Foobar Api call will be tracked under the key `foobar_api_call`.
+  Note that you need to `require` your endpoint before invoking the `instrument` macro.
