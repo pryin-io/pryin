@@ -20,7 +20,7 @@ defmodule PryIn.CustomTrace do
   You can set a group and key later (before calling `finish()`) with `PryIn.CustomTrace.set_group("some_group")`
   and `PryIn.CustomTrace.set_key("some_group")`.
 
-  *IMPORTANT:* If group and key are not sent, the trace will not be forwarded to PryIn and so won't appear
+  *IMPORTANT:* If group and key are not set, the trace will not be forwarded to PryIn and so won't appear
   in the web interface.
   """
 
