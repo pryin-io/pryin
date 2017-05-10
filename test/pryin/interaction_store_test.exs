@@ -108,6 +108,27 @@ defmodule PryIn.InteractionStoreTest do
     assert InteractionStore.get_state.running_interactions == %{}
   end
 
+  test "finish_interaction drops a custom trace without group and key" do
+    interaction = Factory.build(:custom_trace, custom_group: nil)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
+    assert InteractionStore.get_state.running_interactions == %{}
+
+    interaction = Factory.build(:custom_trace, custom_key: nil)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
+    assert InteractionStore.get_state.running_interactions == %{}
+
+    interaction = Factory.build(:custom_trace)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    interaction_id = interaction.interaction_id
+    assert [%{interaction_id: ^interaction_id}] = InteractionStore.get_state.finished_interactions
+    assert InteractionStore.get_state.running_interactions == %{}
+  end
+
   test "handle DOWN for an interaction process" do
     interaction = Factory.build(:request, duration: 1)
     pid = spawn fn -> :timer.sleep(5000) end
@@ -129,6 +150,12 @@ defmodule PryIn.InteractionStoreTest do
 
     InteractionStore.finish_interaction(pid)
     refute InteractionStore.has_pid?(pid)
+
+    ref = Process.monitor(InteractionStore)
+    Application.stop(:pryin)
+    assert_receive {:DOWN, ^ref, _, _, _}
+    refute InteractionStore.has_pid?(pid)
+    Application.ensure_all_started(:pryin)
   end
 
   test "get_field" do

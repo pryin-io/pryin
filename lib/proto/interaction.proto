@@ -3,6 +3,7 @@ message Interaction {
     request = 0;
     channel_receive = 1;
     channel_join = 2;
+    custom_trace = 3;
   }
 
   message EctoQuery {
@@ -45,4 +46,6 @@ message Interaction {
   optional string channel = 10;
   optional string topic = 11;
   optional string event = 12;
+  optional string custom_group = 13;
+  optional string custom_key = 14;
 }

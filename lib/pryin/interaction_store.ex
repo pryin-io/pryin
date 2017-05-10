@@ -94,6 +94,7 @@ defmodule PryIn.InteractionStore do
 
   @doc """
   Returns the `field` value of the running interaction with the given `pid`.
+  Not save to call. Wrap in `Wormhole.capture`.
   """
   def get_field(pid, field) do
     GenServer.call(__MODULE__, {:get_field, pid, field})
@@ -130,6 +131,8 @@ defmodule PryIn.InteractionStore do
   # SERVER
 
   def handle_cast({:start_interaction, pid, interaction}, state) do
+    state = drop_running_interaction(pid, state)
+
     if stored_interacions_count(state) >= max_interactions() do
       Logger.info("Dropping interaction #{inspect pid} because buffer is full.")
       {:noreply, state}
@@ -196,13 +199,13 @@ defmodule PryIn.InteractionStore do
     finished_interaction = Map.update!(finished_interaction, :start_time, &trunc(&1 / 1000))
 
     if forward_interaction?(finished_interaction) do
-      Logger.debug("finished interaction: #{inspect finished_interaction}")
+      Logger.debug("finished interaction: #{finished_interaction.interaction_id}")
       {:noreply, %{state |
                    running_interactions: running_interactions,
                    monitor_refs: remaining_monitor_refs,
                    finished_interactions: [finished_interaction | state.finished_interactions]}}
     else
-      Logger.debug("dropped interaction without controller and action: #{inspect finished_interaction}")
+      Logger.debug("dropped interaction without controller, action and custom key: #{finished_interaction.interaction_id}")
       {:noreply, %{state |
                    running_interactions: running_interactions,
                    monitor_refs: remaining_monitor_refs,
@@ -211,13 +214,9 @@ defmodule PryIn.InteractionStore do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    {monitor_ref, remaining_monitor_refs} = Map.pop(state.monitor_refs, pid)
-    unless is_nil(monitor_ref), do: Process.demonitor(monitor_ref)
-    {_down_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
+    Logger.debug("interaction process down before finish was called")
 
-    {:noreply, %{state |
-                 running_interactions: running_interactions,
-                 monitor_refs: remaining_monitor_refs}}
+    {:noreply, drop_running_interaction(pid, state)}
   end
 
   def handle_call({:has_pid, pid}, _from, state) do
@@ -257,8 +256,21 @@ defmodule PryIn.InteractionStore do
   end
   defp forward_interaction?(%{type: :channel_receive}), do: true
   defp forward_interaction?(%{type: :channel_join}), do: true
+  defp forward_interaction?(interaction = %{type: :custom_trace}) do
+    interaction.custom_group && interaction.custom_key
+  end
 
   defp stored_interacions_count(%{finished_interactions: finished_interactions, running_interactions: running_interactions}) do
     length(Map.keys(running_interactions)) + length(finished_interactions)
+  end
+
+  defp drop_running_interaction(pid, state) do
+    {monitor_ref, remaining_monitor_refs} = Map.pop(state.monitor_refs, pid)
+    unless is_nil(monitor_ref), do: Process.demonitor(monitor_ref)
+    {_down_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
+
+    %{state |
+      running_interactions: running_interactions,
+      monitor_refs: remaining_monitor_refs}
   end
 end
