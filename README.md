@@ -47,7 +47,7 @@ config :pryin,
   env: :prod
 ```
 
-    Possible values for `env` are `:dev`, `:staging` or `:prod`.
+  Possible values for `env` are `:dev`, `:staging` or `:prod`.
 
   5. Add the PryIn plug to your application's endpoint (`lib/my_app/endpoint.ex`) just before the router plug:
 
