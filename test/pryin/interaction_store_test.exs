@@ -155,7 +155,7 @@ defmodule PryIn.InteractionStoreTest do
     Application.stop(:pryin)
     assert_receive {:DOWN, ^ref, _, _, _}
     refute InteractionStore.has_pid?(pid)
-    Application.ensure_all_started(:pryin)
+    {:ok, _} = Application.ensure_all_started(:pryin)
   end
 
   test "get_field" do

@@ -46,7 +46,7 @@ defmodule PryIn.CustomTraceTest do
     CustomTrace.set_key("daily_email_job")
     CustomTrace.finish()
 
-    Application.ensure_all_started(:pryin)
+    {:ok, _} = Application.ensure_all_started(:pryin)
   end
 
 end
