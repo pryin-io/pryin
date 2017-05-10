@@ -55,7 +55,7 @@ defmodule PryIn.BaseForwarder do
   end
 
   defp wrong_env(val) do
-    Logger.error "PryIn `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect val}"
+    Logger.error "[PryIn] `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect val}"
     :dev
   end
 end

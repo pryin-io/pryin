@@ -35,8 +35,8 @@ defmodule PryIn.Api.Live do
     if Application.get_env(:pryin, :enabled) do
       case HTTP.post("interactions/#{api_key()}", data, [], [hackney: [pool: :pryin_pool]]) do
         {:ok, %{status_code: 201}} -> :ok
-        {:ok, %{status: status, body: body}} -> Logger.warn "Could not send interactions to PryIn: [#{inspect status}] - #{inspect body}"
-        response -> Logger.warn "Could not send interactions to PryIn: #{inspect response}"
+        {:ok, %{status: status, body: body}} -> Logger.warn "[PryIn] Could not send interactions to PryIn: [#{inspect status}] - #{inspect body}"
+        response -> Logger.warn "[PryIn] Could not send interactions to PryIn: #{inspect response}"
       end
     end
   end
@@ -50,8 +50,8 @@ defmodule PryIn.Api.Live do
     if Application.get_env(:pryin, :enabled) do
       case HTTP.post("system_metrics/#{api_key()}", data, [], [hackney: [pool: :pryin_pool]]) do
         {:ok, %{status_code: 201}} -> :ok
-        {:ok, %{status: status, body: body}} -> Logger.warn "Could not send system metrics to PryIn: [#{inspect status}] - #{inspect body}"
-        response -> Logger.warn "Could not send system metrics to PryIn: #{inspect response}"
+        {:ok, %{status: status, body: body}} -> Logger.warn "[PryIn] Could not send system metrics to PryIn: [#{inspect status}] - #{inspect body}"
+        response -> Logger.warn "[PryIn] Could not send system metrics to PryIn: #{inspect response}"
       end
     end
   end

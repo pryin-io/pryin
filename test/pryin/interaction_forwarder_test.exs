@@ -93,7 +93,7 @@ defmodule PryIn.InteractionForwarderTest do
       data = Data.decode(encoded_data)
       assert data.env == :dev
     end
-    assert captured_log =~ "PryIn `env` configuration needs to be one of [:dev, :staging, :prod]. Got :different_env"
+    assert captured_log =~ "[PryIn] `env` configuration needs to be one of [:dev, :staging, :prod]. Got :different_env"
     Application.put_env(:pryin, :env, :dev)
   end
 end

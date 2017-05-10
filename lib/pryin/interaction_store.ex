@@ -134,7 +134,7 @@ defmodule PryIn.InteractionStore do
     state = drop_running_interaction(pid, state)
 
     if stored_interacions_count(state) >= max_interactions() do
-      Logger.info("Dropping interaction #{inspect pid} because buffer is full.")
+      Logger.info("[PryIn] Dropping interaction #{inspect pid} because buffer is full.")
       {:noreply, state}
     else
       monitor_refs = Map.put(state.monitor_refs, pid, Process.monitor(pid))
@@ -199,13 +199,13 @@ defmodule PryIn.InteractionStore do
     finished_interaction = Map.update!(finished_interaction, :start_time, &trunc(&1 / 1000))
 
     if forward_interaction?(finished_interaction) do
-      Logger.debug("finished interaction: #{finished_interaction.interaction_id}")
+      Logger.debug("[PryIn] Finished interaction: #{finished_interaction.interaction_id}")
       {:noreply, %{state |
                    running_interactions: running_interactions,
                    monitor_refs: remaining_monitor_refs,
                    finished_interactions: [finished_interaction | state.finished_interactions]}}
     else
-      Logger.debug("dropped interaction without controller, action and custom key: #{finished_interaction.interaction_id}")
+      Logger.debug("[PryIn] dropped interaction without controller, action and custom key: #{finished_interaction.interaction_id}")
       {:noreply, %{state |
                    running_interactions: running_interactions,
                    monitor_refs: remaining_monitor_refs,
@@ -214,7 +214,7 @@ defmodule PryIn.InteractionStore do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    Logger.debug("interaction process down before finish was called")
+    Logger.debug("[PryIn] Interaction process down before finish was called")
 
     {:noreply, drop_running_interaction(pid, state)}
   end
