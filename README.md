@@ -16,7 +16,7 @@ def applications do
 end
 ...
 def deps do
-  [{:pryin, "~> 0.1.0"}]
+  [{:pryin, "~> 1.0"}]
 end
 ```
 
