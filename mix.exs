@@ -16,8 +16,8 @@ defmodule PryIn.Mixfile do
      description: "PryIn is a performance monitoring platform for your Phoenix application. Currently in closed alpha.",
      package: package(),
      docs: [main: "readme",
-            #logo: "path/to/logo.png",
-            extras: ["README.md"]]
+            logo: "docs/img/logo.png",
+            extras: ["README.md", "docs/background_jobs.md", "docs/plugs.md", "docs/instrumenting_functions.md"]]
     ]
   end
 
