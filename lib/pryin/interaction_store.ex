@@ -1,8 +1,16 @@
 defmodule PryIn.InteractionStore do
   use GenServer
   require Logger
-  defstruct [running_interactions: %{}, monitor_refs: %{}, finished_interactions: []]
+  defstruct [running_interactions: %{}, finished_interactions: []]
   alias PryIn.{Wormhole, Interaction}
+
+  defmodule RunningInteraction do
+    @moduledoc """
+    Data about a single running interaction
+    """
+
+    defstruct [:type, :interaction, :ref, :child_pids]
+  end
 
   @moduledoc """
   Stores interactions that will later be forwarded by the forwarder.
@@ -137,78 +145,67 @@ defmodule PryIn.InteractionStore do
       Logger.info("[PryIn] Dropping interaction #{inspect pid} because buffer is full.")
       {:noreply, state}
     else
-      monitor_refs = Map.put(state.monitor_refs, pid, Process.monitor(pid))
-      running_interactions = Map.put(state.running_interactions, pid, interaction)
-      {:noreply, %{state |
-                   running_interactions: running_interactions,
-                   monitor_refs: monitor_refs}}
+      ref = Process.monitor(pid)
+      running_interaction = %RunningInteraction{type: :parent, interaction: interaction, ref: ref, child_pids: []}
+      running_interactions = Map.put(state.running_interactions, pid, running_interaction)
+      {:noreply, %{state | running_interactions: running_interactions}}
     end
   end
 
   def handle_cast({:set_interaction_data, pid, data}, state) do
-    interaction = state.running_interactions
-    |> Map.get(pid)
-    |> Map.merge(data)
-    running_interactions = %{state.running_interactions | pid => interaction}
-    {:noreply, %{state | running_interactions: running_interactions}}
+    state = update_in(state.running_interactions[pid].interaction,
+      fn interaction -> Map.merge(interaction, data)
+    end)
+    {:noreply, state}
   end
 
   def handle_cast({:add_ecto_query, pid, data}, state) do
-    interaction = Map.get(state.running_interactions, pid)
-    case interaction do
-      nil ->
-        {:noreply, state}
-      interaction ->
-        ecto_query = Interaction.EctoQuery.new(data)
-        interaction = Map.update!(interaction, :ecto_queries, &([ecto_query | &1]))
-        running_interactions = %{state.running_interactions | pid => interaction}
-        {:noreply, %{state | running_interactions: running_interactions}}
-    end
+    state = update_in(state.running_interactions[pid].interaction,
+      fn
+        nil -> nil
+        interaction ->
+          ecto_query = Interaction.EctoQuery.new(data)
+          Map.update!(interaction, :ecto_queries, &([ecto_query | &1]))
+      end)
+    {:noreply, state}
   end
 
   def handle_cast({:add_view_rendering, pid, data}, state) do
-    interaction = Map.get(state.running_interactions, pid)
-    case interaction do
-      nil ->
-        {:noreply, state}
-      interaction ->
-        view_rendering = Interaction.ViewRendering.new(data)
-        interaction = Map.update!(interaction, :view_renderings, &([view_rendering | &1]))
-        running_interactions = %{state.running_interactions | pid => interaction}
-        {:noreply, %{state | running_interactions: running_interactions}}
-    end
+    state = update_in(state.running_interactions[pid].interaction,
+      fn
+        nil -> nil
+        interaction ->
+          view_rendering = Interaction.ViewRendering.new(data)
+          Map.update!(interaction, :view_renderings, &([view_rendering | &1]))
+      end)
+    {:noreply, state}
   end
 
   def handle_cast({:add_custom_metric, pid, data}, state) do
-    interaction = Map.get(state.running_interactions, pid)
-    case interaction do
-      nil ->
-        {:noreply, state}
-      interaction ->
-        custom_metric = Interaction.CustomMetric.new(data)
-        interaction = Map.update!(interaction, :custom_metrics, &([custom_metric | &1]))
-        running_interactions = %{state.running_interactions | pid => interaction}
-        {:noreply, %{state | running_interactions: running_interactions}}
-    end
+    state = update_in(state.running_interactions[pid].interaction,
+      fn
+        nil -> nil
+        interaction ->
+          custom_metric = Interaction.CustomMetric.new(data)
+          Map.update!(interaction, :custom_metrics, &([custom_metric | &1]))
+      end)
+    {:noreply, state}
   end
 
   def handle_cast({:finish_interaction, pid}, state) do
-    {monitor_ref, remaining_monitor_refs} = Map.pop(state.monitor_refs, pid)
-    Process.demonitor(monitor_ref)
-    {finished_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
-    finished_interaction = Map.update!(finished_interaction, :start_time, &trunc(&1 / 1000))
+    {finished_running_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
+    Process.demonitor(finished_running_interaction.ref)
+    finished_interaction = Map.update!(finished_running_interaction.interaction, :start_time, &trunc(&1 / 1000))
 
     if forward_interaction?(finished_interaction) do
       Logger.debug("[PryIn] Finished interaction: #{finished_interaction.interaction_id}")
       {:noreply, %{state |
                    running_interactions: running_interactions,
-                   monitor_refs: remaining_monitor_refs,
                    finished_interactions: [finished_interaction | state.finished_interactions]}}
     else
       Logger.debug("[PryIn] dropped interaction without controller, action and custom key: #{finished_interaction.interaction_id}")
       {:noreply, %{state |
                    running_interactions: running_interactions,
-                   monitor_refs: remaining_monitor_refs,
                    finished_interactions: state.finished_interactions}}
     end
   end
@@ -225,13 +222,12 @@ defmodule PryIn.InteractionStore do
   end
 
   def handle_call({:get_field, pid, field}, _from, state) do
-    interaction = Map.get(state.running_interactions, pid)
-    result = Map.get(interaction, field)
+    result = Map.get(state.running_interactions[pid].interaction, field)
     {:reply, result, state}
   end
 
   def handle_call({:get_interaction, pid}, _from, state) do
-    interaction = Map.get(state.running_interactions, pid)
+    interaction = state.running_interactions[pid].interaction
     {:reply, interaction, state}
   end
 
@@ -265,12 +261,9 @@ defmodule PryIn.InteractionStore do
   end
 
   defp drop_running_interaction(pid, state) do
-    {monitor_ref, remaining_monitor_refs} = Map.pop(state.monitor_refs, pid)
-    unless is_nil(monitor_ref), do: Process.demonitor(monitor_ref)
-    {_down_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
+    {down_running_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
+    unless is_nil(down_running_interaction), do: Process.demonitor(down_running_interaction.ref)
 
-    %{state |
-      running_interactions: running_interactions,
-      monitor_refs: remaining_monitor_refs}
+    %{state | running_interactions: running_interactions}
   end
 end
