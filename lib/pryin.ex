@@ -25,4 +25,32 @@ defmodule PryIn do
     opts = [strategy: :rest_for_one, name: PryIn.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+
+  @doc """
+  Join a process into a running trace.
+
+  Use this to add metrics from a child process appear as part of the parent process.
+  Example:
+
+  ```
+  def index(conn, params) do
+    ...
+    parent_pid = self()
+    task = Task.async(fn ->
+      PryIn.join_trace(parent_pid, self())
+      Repo.all(User)
+      ...
+    end)
+    Task.await(task)
+    ...
+  end
+  ```
+
+  Without calling `join_trace` here, the `Repo.all` call would not be added to the
+  trace of the `index` action, as it happens in a different process.
+  """
+  def join_trace(parent_pid, child_pid) do
+    PryIn.InteractionStore.add_child(parent_pid, child_pid)
+  end
 end
