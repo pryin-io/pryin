@@ -36,7 +36,8 @@ defmodule PryIn.CustomTrace do
     interaction = Interaction.new(start_time: req_start_time,
       type: :custom_trace,
       custom_group: opts[:group],
-      custom_key: opts[:key])
+      custom_key: opts[:key],
+      pid: inspect(self()))
     InteractionStore.start_interaction(self(), interaction)
   end
 

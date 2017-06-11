@@ -24,6 +24,7 @@ defmodule PryIn.InstrumenterTest do
     assert view_rendering.duration > 0
     assert view_rendering.format == "html"
     assert view_rendering.template == "test_template.html"
+    assert view_rendering.pid      == inspect(self())
   end
 
 
@@ -40,6 +41,7 @@ defmodule PryIn.InstrumenterTest do
     assert custom_instrumentation.function == "custom_instrumentation_action/2"
     assert custom_instrumentation.module == "PryIn.TestController"
     assert custom_instrumentation.line > 0
+    assert custom_instrumentation.pid == inspect(self())
   end
 
 
@@ -62,6 +64,7 @@ defmodule PryIn.InstrumenterTest do
     assert interaction.topic          == "test:topic"
     assert interaction.start_time     != nil
     assert interaction.duration       != nil
+    assert interaction.pid            == inspect(self())
   end
 
   test "channel handle_in instrumentation" do
@@ -80,6 +83,7 @@ defmodule PryIn.InstrumenterTest do
       assert interaction.event          == "test:msg"
       assert interaction.start_time     != nil
       assert interaction.duration       != nil
+      assert interaction.pid            == inspect(socket.channel_pid)
     end
   end
 

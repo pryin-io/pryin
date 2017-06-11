@@ -40,7 +40,8 @@ defmodule PryIn.EctoLogger do
         queue_time: queue_time,
         source: Map.get(log_entry, :source),
         duration: duration,
-        offset: now - InteractionStore.get_field(pid, :start_time) - duration
+        offset: now - InteractionStore.get_field(pid, :start_time) - duration,
+        pid: inspect(pid)
       ]
 
       InteractionStore.add_ecto_query(pid, data)

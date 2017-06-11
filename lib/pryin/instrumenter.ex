@@ -45,6 +45,7 @@ defmodule PryIn.Instrumenter do
       template: template,
       offset: offset,
       duration: System.convert_time_unit(time_diff, :native, :micro_seconds),
+      pid: inspect(self())
     ]
     InteractionStore.add_view_rendering(self(), data)
   end
@@ -60,7 +61,8 @@ defmodule PryIn.Instrumenter do
       interaction_id: generate_interaction_id(),
       channel: module_name(runtime_metadata[:socket].channel),
       topic: runtime_metadata[:socket].topic,
-      event: runtime_metadata[:event])
+      event: runtime_metadata[:event],
+      pid: inspect(self()))
     InteractionStore.start_interaction(self(), interaction)
   end
   def phoenix_channel_receive(:stop, time_diff, _metadata) do
@@ -81,7 +83,8 @@ defmodule PryIn.Instrumenter do
       type: :channel_join,
       interaction_id: generate_interaction_id(),
       channel: module_name(runtime_metadata[:socket].channel),
-      topic: runtime_metadata[:socket].topic)
+      topic: runtime_metadata[:socket].topic,
+      pid: inspect(self()))
     InteractionStore.start_interaction(self(), interaction)
   end
   def phoenix_channel_join(:stop, time_diff, _metadata) do
@@ -117,7 +120,8 @@ defmodule PryIn.Instrumenter do
        file: compile_metadata.file,
        module: inspect(compile_metadata.module),
        function: compile_metadata.function,
-       line: compile_metadata.line]
+       line: compile_metadata.line,
+       pid: inspect(self())]
     end
   end
   def pryin(:stop, _time_diff, nil), do: :ok
