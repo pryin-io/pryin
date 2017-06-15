@@ -30,7 +30,7 @@ defmodule PryIn do
   @doc """
   Join a process into a running trace.
 
-  Use this to add metrics from a child process appear as part of the parent process.
+  Use this to add metrics from a child process to a parent process.
   Example:
 
   ```
