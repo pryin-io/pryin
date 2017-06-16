@@ -227,12 +227,10 @@ defmodule PryIn.InteractionStore do
     state = if state.running_interactions[parent_pid] do
       case state.running_interactions[child_pid] do
         nil -> add_new_child(state, parent_pid, child_pid)
-        %RunningInteraction{type: :parent} -> if child_pid != parent_pid do
+        %RunningInteraction{type: :parent} when child_pid == parent_pid -> state
+        %RunningInteraction{type: :parent} ->
           Logger.warn("[PryIn] cannot join #{inspect child_pid} to a different join, because it is already running a trace")
           state
-        else
-          state
-        end
         _running_interaction -> move_child_to_new_parent(state, parent_pid, child_pid)
       end
     else
