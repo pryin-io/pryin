@@ -1,6 +1,6 @@
 defmodule PryIn.InteractionForwarderTest do
   use PryIn.Case
-  alias PryIn.{Interaction, InteractionStore, Data}
+  alias PryIn.{InteractionStore, Data}
 
   test "does not forward an empty interactions list" do
     send(PryIn.InteractionForwarder, :forward_interactions)
@@ -8,11 +8,11 @@ defmodule PryIn.InteractionForwarderTest do
   end
 
   test "sends finished interactions" do
-    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+    interaction_1 = Factory.build(:request, start_time: 1000, duration: 1, interaction_id: "i1")
     pid_1 = spawn fn -> :timer.sleep(5000) end
-    interaction_2 = Interaction.new(start_time: 1000, duration: 2, interaction_id: "i2", type: :request, controller: "SomeController")
+    interaction_2 = Factory.build(:request, start_time: 1000, duration: 2, interaction_id: "i2")
     pid_2 = spawn fn -> :timer.sleep(5000) end
-    interaction_3 = Interaction.new(start_time: 1000, duration: 3, interaction_id: "i3", type: :request, controller: "SomeController")
+    interaction_3 = Factory.build(:request, start_time: 1000, duration: 3, interaction_id: "i3")
     pid_3 = spawn fn -> :timer.sleep(5000) end
 
     InteractionStore.start_interaction(pid_1, interaction_1)
@@ -37,7 +37,7 @@ defmodule PryIn.InteractionForwarderTest do
   end
 
   test "includes metadata" do
-    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+    interaction_1 = Factory.build(:request, start_time: 1000, duration: 1, interaction_id: "i1")
     pid_1 = spawn fn -> :timer.sleep(5000) end
 
     InteractionStore.start_interaction(pid_1, interaction_1)
@@ -54,7 +54,7 @@ defmodule PryIn.InteractionForwarderTest do
   for env <- ~w(dev staging prod)a do
     test "allows atom #{env} as env setting" do
       Application.put_env(:pryin, :env, unquote(env))
-      interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+      interaction_1 = Factory.build(:request)
       InteractionStore.start_interaction(self(), interaction_1)
       InteractionStore.finish_interaction(self())
 
@@ -69,7 +69,7 @@ defmodule PryIn.InteractionForwarderTest do
   for env <- ~w(dev staging prod) do
     test "allows string #{env} as env setting" do
       Application.put_env(:pryin, :env, unquote(env))
-      interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+      interaction_1 = Factory.build(:request)
       InteractionStore.start_interaction(self(), interaction_1)
       InteractionStore.finish_interaction(self())
 
@@ -83,7 +83,7 @@ defmodule PryIn.InteractionForwarderTest do
 
   test "defaults to dev for different values" do
     Application.put_env(:pryin, :env, "different_env")
-    interaction_1 = Interaction.new(start_time: 1000, duration: 1, interaction_id: "i1", type: :request, controller: "SomeController")
+    interaction_1 = Factory.build(:request)
     InteractionStore.start_interaction(self(), interaction_1)
     InteractionStore.finish_interaction(self())
 

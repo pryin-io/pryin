@@ -85,8 +85,28 @@ defmodule PryIn.InteractionStoreTest do
     assert InteractionStore.get_state.running_interactions == %{}
   end
 
-  test "finish_interaction drops a request without controller and action" do
-    interaction = Factory.build(:request, controller: nil, action: nil)
+  test "finish_interaction drops a request without controller" do
+    interaction = Factory.build(:request, controller: nil)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
+    assert InteractionStore.get_state.running_interactions == %{}
+
+    interaction = Factory.build(:request, controller: "")
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
+    assert InteractionStore.get_state.running_interactions == %{}
+  end
+
+  test "finish_interaction drops a request without action" do
+    interaction = Factory.build(:request, action: nil)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
+    assert InteractionStore.get_state.running_interactions == %{}
+
+    interaction = Factory.build(:request, action: "")
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.finish_interaction(self())
     assert InteractionStore.get_state.finished_interactions == []
@@ -118,7 +138,19 @@ defmodule PryIn.InteractionStoreTest do
     assert InteractionStore.get_state.finished_interactions == []
     assert InteractionStore.get_state.running_interactions == %{}
 
+    interaction = Factory.build(:custom_trace, custom_group: "")
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
+    assert InteractionStore.get_state.running_interactions == %{}
+
     interaction = Factory.build(:custom_trace, custom_key: nil)
+    InteractionStore.start_interaction(self(), interaction)
+    InteractionStore.finish_interaction(self())
+    assert InteractionStore.get_state.finished_interactions == []
+    assert InteractionStore.get_state.running_interactions == %{}
+
+    interaction = Factory.build(:custom_trace, custom_key: "")
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.finish_interaction(self())
     assert InteractionStore.get_state.finished_interactions == []

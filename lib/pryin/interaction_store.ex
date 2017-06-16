@@ -278,12 +278,12 @@ defmodule PryIn.InteractionStore do
   end
 
   defp forward_interaction?(interaction = %{type: :request}) do
-    interaction.controller || interaction.action
+    !blank?(interaction.controller) && !blank?(interaction.action)
   end
   defp forward_interaction?(%{type: :channel_receive}), do: true
   defp forward_interaction?(%{type: :channel_join}), do: true
   defp forward_interaction?(interaction = %{type: :custom_trace}) do
-    interaction.custom_group && interaction.custom_key
+    !blank?(interaction.custom_group) && !blank?(interaction.custom_key)
   end
 
   defp stored_interactions_count(%{finished_interactions: finished_interactions, running_interactions: running_interactions}) do
@@ -330,7 +330,7 @@ defmodule PryIn.InteractionStore do
     %{state | running_interactions: running_interactions}
   end
 
-  def move_child_to_new_parent(state, parent_pid, child_pid) do
+  defp move_child_to_new_parent(state, parent_pid, child_pid) do
     child_interaction = state.running_interactions[child_pid]
     state = update_in(state.running_interactions[child_interaction.parent_pid].child_pids, fn child_pids ->
       MapSet.delete(child_pids, child_pid)
@@ -338,4 +338,8 @@ defmodule PryIn.InteractionStore do
     state = update_in(state.running_interactions[parent_pid].child_pids, &MapSet.put(&1, child_pid))
     put_in(state.running_interactions[child_pid].parent_pid, parent_pid)
   end
+
+  defp blank?(""), do: true
+  defp blank?(nil), do: true
+  defp blank?(_), do: false
 end
