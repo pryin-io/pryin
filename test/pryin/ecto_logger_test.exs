@@ -27,6 +27,7 @@ defmodule PryIn.EctoLoggerTest do
       assert data.query_time  == 50
       assert data.queue_time  == 200
       assert data.source      == "user"
+      assert data.pid         == inspect(self())
       assert data.offset
     end
 

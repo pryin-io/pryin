@@ -5,7 +5,7 @@ defmodule PryIn.SystemMetricsCollectorTest do
   test "sends system metrics" do
     Application.put_env(:pryin, :collect_interval, 0)
     send(SystemMetricsCollector, :collect_metrics)
-    assert_receive {:system_metrics_sent, encoded_data}
+    assert_receive({:system_metrics_sent, encoded_data}, 500)
     data = Data.decode(encoded_data)
     assert data.env == :dev
     assert data.pryin_version == "1.0.0"

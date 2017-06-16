@@ -14,7 +14,8 @@ defmodule PryIn.InteractionStoreTest do
     test "adds a running interaction" do
       interaction = Factory.build(:request, duration: 1)
       InteractionStore.start_interaction(self(), interaction)
-      assert InteractionStore.get_state.running_interactions == %{self() => interaction}
+      pid = self()
+      assert %{^pid => %{interaction: ^interaction}} = InteractionStore.get_state.running_interactions
     end
 
     test "limits number of interactions" do
@@ -42,7 +43,9 @@ defmodule PryIn.InteractionStoreTest do
     interaction = Factory.build(:request, duration: 1)
     InteractionStore.start_interaction(self(), interaction)
     InteractionStore.set_interaction_data(self(), %{duration: 30})
-    assert InteractionStore.get_state.running_interactions == %{self() => %{interaction | duration: 30}}
+    pid = self()
+    new_interaction = %{interaction | duration: 30}
+    assert  %{^pid => %{interaction: ^new_interaction}} = InteractionStore.get_state.running_interactions
   end
 
   test "add_ecto_query" do
@@ -133,7 +136,7 @@ defmodule PryIn.InteractionStoreTest do
     interaction = Factory.build(:request, duration: 1)
     pid = spawn fn -> :timer.sleep(5000) end
     InteractionStore.start_interaction(pid, interaction)
-    assert InteractionStore.get_state.running_interactions == %{pid => interaction}
+    assert  %{^pid => %{interaction: ^interaction}} = InteractionStore.get_state.running_interactions
 
     Process.exit(pid, :kill)
     wait_until_process_stopped(pid)

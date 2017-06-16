@@ -12,6 +12,7 @@ defmodule PryIn.CustomTraceTest do
     assert interaction.type == :custom_trace
     assert interaction.custom_group == "workers"
     assert interaction.custom_key == "daily_email_job"
+    assert interaction.pid == inspect(self())
   end
 
   test "can set group and key on trace start" do

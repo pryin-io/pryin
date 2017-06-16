@@ -25,7 +25,8 @@ defmodule PryIn.Plug do
     req_start_time = utc_unix_datetime()
     interaction = Interaction.new(start_time: req_start_time,
       type: :request,
-      interaction_id: Logger.metadata[:request_id] || generate_interaction_id())
+      interaction_id: Logger.metadata[:request_id] || generate_interaction_id(),
+      pid: inspect(self()))
 
     InteractionStore.start_interaction(self(), interaction)
 
