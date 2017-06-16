@@ -155,7 +155,7 @@ defmodule PryIn.InteractionStore do
       {:noreply, state}
     else
       ref = Process.monitor(pid)
-      running_interaction = %RunningInteraction{type: :parent, interaction: interaction, ref: ref, child_pids: []}
+      running_interaction = %RunningInteraction{type: :parent, interaction: interaction, ref: ref, child_pids: MapSet.new}
       running_interactions = Map.put(state.running_interactions, pid, running_interaction)
       {:noreply, %{state | running_interactions: running_interactions}}
     end
@@ -300,7 +300,7 @@ defmodule PryIn.InteractionStore do
                              %RunningInteraction{type: :child} ->
                                Process.demonitor(down_running_interaction.ref)
                                update_in(running_interactions[down_running_interaction.parent_pid].child_pids, fn child_pids ->
-                                 List.delete(child_pids, pid)
+                                 MapSet.delete(child_pids, pid)
                                end)
                            end
 
@@ -326,16 +326,16 @@ defmodule PryIn.InteractionStore do
     running_interaction = %RunningInteraction{type: :child, ref: ref, parent_pid: parent_pid}
     running_interactions = Map.put(state.running_interactions, child_pid, running_interaction)
 
-    running_interactions = update_in(running_interactions[parent_pid].child_pids, &([child_pid | &1]))
+    running_interactions = update_in(running_interactions[parent_pid].child_pids, &MapSet.put(&1, child_pid))
     %{state | running_interactions: running_interactions}
   end
 
   def move_child_to_new_parent(state, parent_pid, child_pid) do
     child_interaction = state.running_interactions[child_pid]
     state = update_in(state.running_interactions[child_interaction.parent_pid].child_pids, fn child_pids ->
-      List.delete(child_pids, child_pid)
+      MapSet.delete(child_pids, child_pid)
     end)
-    state = update_in(state.running_interactions[parent_pid].child_pids, &([child_pid | &1]))
+    state = update_in(state.running_interactions[parent_pid].child_pids, &MapSet.put(&1, child_pid))
     put_in(state.running_interactions[child_pid].parent_pid, parent_pid)
   end
 end
