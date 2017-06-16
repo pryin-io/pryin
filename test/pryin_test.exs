@@ -111,5 +111,23 @@ defmodule PryInTest do
         PryIn.InteractionStore.has_pid?(self()) # synchronize
       end) =~ "cannot join trace"
     end
+
+    test "allows finishing a parent transaction from the child process" do
+      CustomTrace.start(group: "workers", key: "daily_email_job")
+      self_pid = self()
+      task = Task.async(fn ->
+        PryIn.join_trace(self_pid, self())
+        PryIn.TestEndpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
+          :timer.sleep(1)
+        end
+        CustomTrace.finish()
+      end)
+      Task.await(task)
+
+      [interaction] = InteractionStore.get_state.finished_interactions
+      [custom_instrumentation] = interaction.custom_metrics
+      assert custom_instrumentation.key == "expensive_api_call"
+      assert custom_instrumentation.pid == inspect(task.pid)
+    end
   end
 end

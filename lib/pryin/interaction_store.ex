@@ -202,7 +202,8 @@ defmodule PryIn.InteractionStore do
   end
 
   def handle_cast({:finish_interaction, pid}, state) do
-    {finished_running_interaction, running_interactions} = Map.pop(state.running_interactions, pid)
+    {finished_running_interaction, running_interactions} =
+      Map.pop(state.running_interactions, parent_pid(state, pid))
     Process.demonitor(finished_running_interaction.ref)
 
     running_interactions = clear_children(running_interactions, finished_running_interaction.child_pids)
