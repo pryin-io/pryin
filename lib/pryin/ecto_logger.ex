@@ -17,8 +17,9 @@ defmodule PryIn.EctoLogger do
 
   @doc false
   def log(log_entry) do
-    pid = self()
+    parent_pid = self()
     Wormhole.capture fn ->
+      pid = Map.get(log_entry, :connection_pid, parent_pid)
       do_log(log_entry, pid)
     end
 
