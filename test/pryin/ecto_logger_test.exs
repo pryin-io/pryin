@@ -59,5 +59,15 @@ defmodule PryIn.EctoLoggerTest do
       %{ecto_queries: [data]} = InteractionStore.get_interaction(self())
       assert data.pid == inspect(self())
     end
+
+    test "can handle nil connection_pids" do
+      InteractionStore.start_interaction(self(), Interaction.new(start_time: 1000))
+      log_entry = %{@log_entry | query_time: nil, connection_pid: nil}
+      ^log_entry = EctoLogger.log(log_entry)
+      %{ecto_queries: [data]} = InteractionStore.get_interaction(self())
+
+      assert data.query_time  == 0
+      assert data.duration    == 300
+    end
   end
 end
