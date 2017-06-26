@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- fix for when connection_pid in an Ecto.LogEntry is nil
+
 ## 1.1.1
 
 - fix preload queries not appearing in traces for newer ecto versions
