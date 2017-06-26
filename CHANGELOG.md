@@ -1,6 +1,6 @@
 # Changelog
 
-## Next
+## 1.1.1
 
 - fix preload queries not appearing in traces for newer ecto versions
 
