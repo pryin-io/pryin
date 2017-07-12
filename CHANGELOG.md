@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.3
+
+- relax phoenix version requirement to allow 1.3 release candidate
+
 ## 1.1.2
 
 - fix for when connection_pid in an Ecto.LogEntry is nil
