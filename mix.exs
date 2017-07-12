@@ -55,7 +55,7 @@ defmodule PryIn.Mixfile do
   defp deps do
     [
       {:plug, "~> 1.0", optional: true},
-      {:phoenix, "~> 1.2", optional: true},
+      {:phoenix, "~> 1.2 or ~> 1.2-rc", optional: true},
       {:ecto, "~> 2.0", optional: true},
       {:httpoison, "~> 0.11"},
       {:exprotobuf, "~> 1.2"},
