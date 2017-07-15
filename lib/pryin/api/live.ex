@@ -16,12 +16,11 @@ defmodule PryIn.Api.Live do
   """
   def send_interactions(data) do
     if Application.get_env(:pryin, :enabled) do
-      case :hackney.post(make_url("interactions/#{api_key()}"), @headers, data, [pool: :pryin_pool]) do
+      case :hackney.post(make_url("interactions/#{api_key()}"), @headers, data, [pool: :pryin_pool, with_body: true]) do
         {:ok, 201, _, _} -> :ok
-        {:ok, status, _, conn_ref} ->
-          body = :hackney.body(conn_ref)
+        {:ok, status, _, body} ->
           Logger.warn "[PryIn] Could not send interactions to PryIn: [#{inspect status}] - #{inspect body}"
-        response -> Logger.warn "[PryIn] Could not send interactions to PryIn: #{inspect response}"
+        {:error, _} = response -> Logger.warn "[PryIn] Could not send interactions to PryIn: #{inspect response}"
       end
     end
   end
@@ -33,12 +32,11 @@ defmodule PryIn.Api.Live do
   """
   def send_system_metrics(data) do
     if Application.get_env(:pryin, :enabled) do
-      case :hackney.post(make_url("system_metrics/#{api_key()}"), @headers, data, [pool: :pryin_pool]) do
+      case :hackney.post(make_url("system_metrics/#{api_key()}"), @headers, data, [pool: :pryin_pool, with_body: true]) do
         {:ok, 201, _, _} -> :ok
-        {:ok, status, _, conn_ref} ->
-          body = :hackney.body(conn_ref)
+        {:ok, status, _, body} ->
           Logger.warn "[PryIn] Could not send system metrics to PryIn: [#{inspect status}] - #{inspect body}"
-        response -> Logger.warn "[PryIn] Could not send system metrics to PryIn: #{inspect response}"
+        {:error, _} = response -> Logger.warn "[PryIn] Could not send system metrics to PryIn: #{inspect response}"
       end
     end
   end
