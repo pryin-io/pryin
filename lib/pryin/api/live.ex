@@ -5,26 +5,9 @@ defmodule PryIn.Api.Live do
   Live Api module for PryIn.
   """
   @behaviour PryIn.Api
+  @prod_base_url "https://client.pryin.io/api/client"
+  @headers  [{"Content-Type", "application/octet-stream"}]
 
-
-  defmodule HTTP do
-    use HTTPoison.Base
-    @moduledoc false
-
-    @prod_base_url "https://client.pryin.io/api/client"
-
-    defp process_url(path) do
-      Path.join([base_url(), path])
-    end
-
-    defp process_request_headers(headers) do
-      [{"Content-Type", "application/octet-stream"} | headers]
-    end
-
-    defp base_url do
-      Application.get_env(:pryin, :base_url, @prod_base_url)
-    end
-  end
 
   @doc """
   Send interaction data to the PryIn Api.
@@ -33,9 +16,11 @@ defmodule PryIn.Api.Live do
   """
   def send_interactions(data) do
     if Application.get_env(:pryin, :enabled) do
-      case HTTP.post("interactions/#{api_key()}", data, [], [hackney: [pool: :pryin_pool]]) do
-        {:ok, %{status_code: 201}} -> :ok
-        {:ok, %{status: status, body: body}} -> Logger.warn "[PryIn] Could not send interactions to PryIn: [#{inspect status}] - #{inspect body}"
+      case :hackney.post(make_url("interactions/#{api_key()}"), @headers, data, [pool: :pryin_pool]) do
+        {:ok, 201, _, _} -> :ok
+        {:ok, status, _, conn_ref} ->
+          body = :hackney.body(conn_ref)
+          Logger.warn "[PryIn] Could not send interactions to PryIn: [#{inspect status}] - #{inspect body}"
         response -> Logger.warn "[PryIn] Could not send interactions to PryIn: #{inspect response}"
       end
     end
@@ -48,9 +33,11 @@ defmodule PryIn.Api.Live do
   """
   def send_system_metrics(data) do
     if Application.get_env(:pryin, :enabled) do
-      case HTTP.post("system_metrics/#{api_key()}", data, [], [hackney: [pool: :pryin_pool]]) do
-        {:ok, %{status_code: 201}} -> :ok
-        {:ok, %{status: status, body: body}} -> Logger.warn "[PryIn] Could not send system metrics to PryIn: [#{inspect status}] - #{inspect body}"
+      case :hackney.post(make_url("system_metrics/#{api_key()}"), @headers, data, [pool: :pryin_pool]) do
+        {:ok, 201, _, _} -> :ok
+        {:ok, status, _, conn_ref} ->
+          body = :hackney.body(conn_ref)
+          Logger.warn "[PryIn] Could not send system metrics to PryIn: [#{inspect status}] - #{inspect body}"
         response -> Logger.warn "[PryIn] Could not send system metrics to PryIn: #{inspect response}"
       end
     end
@@ -59,4 +46,13 @@ defmodule PryIn.Api.Live do
   defp api_key do
     Application.get_env(:pryin, :api_key)
   end
+
+  defp make_url(path) do
+    Path.join([base_url(), path])
+  end
+
+  defp base_url do
+    Application.get_env(:pryin, :base_url, @prod_base_url)
+  end
+
 end

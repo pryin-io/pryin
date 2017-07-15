@@ -1,5 +1,9 @@
 # Changelog
 
+## vNext
+
+- remove httpoison dependency, use hackney directly
+
 ## 1.1.2
 
 - fix for when connection_pid in an Ecto.LogEntry is nil

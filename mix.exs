@@ -33,7 +33,7 @@ defmodule PryIn.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :httpoison, :exprotobuf, :recon],
+    [applications: [:logger, :hackney, :exprotobuf, :recon],
      mod: {PryIn, []}]
   end
 
@@ -57,7 +57,7 @@ defmodule PryIn.Mixfile do
       {:plug, "~> 1.0", optional: true},
       {:phoenix, "~> 1.2", optional: true},
       {:ecto, "~> 2.0", optional: true},
-      {:httpoison, "~> 0.11"},
+      {:hackney, "~> 1.2"},
       {:exprotobuf, "~> 1.2"},
       {:ex_doc, "~> 0.15", only: :dev},
       {:credo, "~> 0.6.1", only: :dev},
