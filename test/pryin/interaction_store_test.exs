@@ -215,6 +215,18 @@ defmodule PryIn.InteractionStoreTest do
     assert InteractionStore.get_state.finished_interactions == []
   end
 
+  test "drop_interaction" do
+    pid_1 = spawn fn -> :timer.sleep(5000) end
+    interaction = Factory.build(:request, start_time: 1000)
+    InteractionStore.start_interaction(pid_1, interaction)
+    InteractionStore.drop_interaction(pid_1)
+    refute InteractionStore.has_pid?(pid_1)
+
+    pid_2 = spawn fn -> :timer.sleep(5000) end
+    # no error when dropping non existant interaction
+    InteractionStore.drop_interaction(pid_2)
+  end
+
 
   defp wait_until_process_stopped(pid) do
     timer_ref = Process.send_after(self(), :stop_waiting_until_process_stopped, 1000)

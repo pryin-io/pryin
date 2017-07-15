@@ -53,4 +53,24 @@ defmodule PryIn do
   def join_trace(parent_pid, child_pid) do
     PryIn.InteractionStore.add_child(parent_pid, child_pid)
   end
+
+
+  @doc """
+  Drops a running trace.
+
+  Use this if you don't want a trace being forwarded to PryIn.
+  Must be called after the trace was started.
+
+  Example:
+
+  ```
+  def index(conn, params) do
+    PryIn.drop_trace()
+    ...
+  end
+  ```
+  """
+  def drop_trace(pid \\ self()) do
+    PryIn.InteractionStore.drop_interaction(pid)
+  end
 end
