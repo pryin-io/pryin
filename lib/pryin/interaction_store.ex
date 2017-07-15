@@ -85,6 +85,15 @@ defmodule PryIn.InteractionStore do
   end
 
   @doc """
+  Drops a running interaction from the store.
+
+  This interaction won't be sent to PryIn.
+  """
+  def drop_interaction(pid) do
+    GenServer.cast(__MODULE__, {:drop_interaction, pid})
+  end
+
+  @doc """
   Returns whether there is a running interaction for the given `pid`.
   """
   def has_pid?(pid) do
@@ -237,6 +246,11 @@ defmodule PryIn.InteractionStore do
       Logger.warn("[PryIn] cannot join trace #{inspect parent_pid}, because it is not running")
       state
     end
+    {:noreply, state}
+  end
+
+  def handle_cast({:drop_interaction, pid}, state) do
+    state = drop_running_interaction(pid, state)
     {:noreply, state}
   end
 

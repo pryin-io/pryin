@@ -3,6 +3,7 @@
 ## vNext
 
 - remove httpoison dependency, use hackney directly
+- add `PryIn.drop_trace()` to prevent traces from being forwarded
 
 ## 1.1.2
 

@@ -130,4 +130,20 @@ defmodule PryInTest do
       assert custom_instrumentation.pid == inspect(task.pid)
     end
   end
+
+  describe "drop_trace" do
+    test "drops a running interaction" do
+      CustomTrace.start(group: "workers", key: "daily_email_job")
+      PryIn.drop_trace()
+      CustomTrace.finish()
+
+      assert InteractionStore.get_state.finished_interactions == []
+    end
+
+    test "does not error when no trace is running" do
+      PryIn.drop_trace()
+    end
+  end
+
+
 end
