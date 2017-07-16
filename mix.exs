@@ -3,7 +3,7 @@ defmodule PryIn.Mixfile do
 
   def project do
     [app: :pryin,
-     version: "1.1.2",
+     version: "1.2.0",
      elixir: "~> 1.3",
      elixirc_paths: elixirc_paths(Mix.env),
      build_embedded: Mix.env == :prod,
@@ -13,7 +13,7 @@ defmodule PryIn.Mixfile do
      name: "PryIn",
      source_url: "https://github.com/pryin-io/pryin",
      homepage_url: "http://pryin.io",
-     description: "PryIn is a performance monitoring platform for your Phoenix application. Currently in closed alpha.",
+     description: "PryIn is a performance monitoring platform for your Phoenix application.",
      package: package(),
      docs: [main: "readme",
             logo: "docs/img/logo.png",
