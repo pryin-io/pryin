@@ -35,7 +35,7 @@ defmodule PryIn.EctoLogger do
       duration = query_time + decode_time + queue_time
 
       data = [
-        query: resolve_query(log_entry.query),
+        query: resolve_query(log_entry.query, log_entry),
         query_time: query_time,
         decode_time: decode_time,
         queue_time: queue_time,
