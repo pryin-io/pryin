@@ -1,5 +1,9 @@
 # Changelog
 
+## vNext
+
+- handle Ecto log entries with functions as query
+
 ## v1.2.0
 
 - remove httpoison dependency, use hackney directly
