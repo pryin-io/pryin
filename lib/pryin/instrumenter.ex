@@ -40,14 +40,16 @@ defmodule PryIn.Instrumenter do
     end
   end
   def phoenix_controller_render(:stop, time_diff, %{format: format, template: template, offset: offset}) do
-    data = [
-      format: format,
-      template: template,
-      offset: offset,
-      duration: System.convert_time_unit(time_diff, :native, :micro_seconds),
-      pid: inspect(self())
-    ]
-    InteractionStore.add_view_rendering(self(), data)
+    if InteractionStore.has_pid?(self()) do
+      data = [
+        format: format,
+        template: template,
+        offset: offset,
+        duration: System.convert_time_unit(time_diff, :native, :micro_seconds),
+        pid: inspect(self())
+      ]
+      InteractionStore.add_view_rendering(self(), data)
+    end
   end
   def phoenix_controller_render(:stop, _time_diff, _), do: :ok
 
@@ -126,8 +128,10 @@ defmodule PryIn.Instrumenter do
   end
   def pryin(:stop, _time_diff, nil), do: :ok
   def pryin(:stop, time_diff, data) do
-    duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
-    data = [{:duration, duration} | data]
-    InteractionStore.add_custom_metric(self(), data)
+    if InteractionStore.has_pid?(self()) do
+      duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
+      data = [{:duration, duration} | data]
+      InteractionStore.add_custom_metric(self(), data)
+    end
   end
 end
