@@ -69,5 +69,17 @@ defmodule PryIn.EctoLoggerTest do
       assert data.query_time  == 0
       assert data.duration    == 300
     end
+
+    test "can handle log entries with functions as query" do
+      InteractionStore.start_interaction(self(), PryIn.Interaction.new(start_time: 1000))
+      query_function = fn %Ecto.LogEntry{} = entry ->
+        "QUERY #{entry.source}"
+      end
+      log_entry = %{@log_entry | connection_pid: self(), query: query_function}
+      assert log_entry == EctoLogger.log(log_entry)
+      %{ecto_queries: [data]} = InteractionStore.get_interaction(self())
+
+      assert data.query == "QUERY user"
+    end
   end
 end
