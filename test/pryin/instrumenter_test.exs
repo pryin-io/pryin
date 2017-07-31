@@ -27,7 +27,6 @@ defmodule PryIn.InstrumenterTest do
     assert view_rendering.pid      == inspect(self())
   end
 
-
   test "custom instrumentation whithin a interaction", %{conn: conn} do
     get conn, "/custom_instrumentation"
 
@@ -44,13 +43,26 @@ defmodule PryIn.InstrumenterTest do
     assert custom_instrumentation.pid == inspect(self())
   end
 
-
   test "custom instrumentation outside of a interaction" do
-    assert ExUnit.CaptureLog.capture_log(fn ->
-      PryIn.TestEndpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
-        :timer.sleep(1)
-      end
-    end) == ""
+    ref = Process.monitor(PryIn.InteractionStore)
+
+    PryIn.TestEndpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
+      :timer.sleep(1)
+    end
+
+    refute_receive({:DOWN, ^ref, _, _, _})
+  end
+
+  test "custom instrumentation when the interaction is finished inside" do
+    ref = Process.monitor(PryIn.InteractionStore)
+
+    PryIn.CustomTrace.start(group: "test", key: "test")
+    PryIn.TestEndpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
+      PryIn.CustomTrace.finish()
+      :timer.sleep(1)
+    end
+
+    refute_receive({:DOWN, ^ref, _, _, _})
   end
 
   test "channel join instrumentation" do
