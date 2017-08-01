@@ -2,6 +2,8 @@
 
 ## vNext
 
+## v1.2.1
+
 - handle Ecto log entries with functions as query
 - prevent errors when traces finish during instrumentation
 
