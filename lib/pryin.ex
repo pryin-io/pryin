@@ -73,4 +73,27 @@ defmodule PryIn do
   def drop_trace(pid \\ self()) do
     PryIn.InteractionStore.drop_interaction(pid)
   end
+
+
+
+  @doc """
+  Add context to a running trace.
+
+  Both arguments need to implement the `String.Chars` protocol,
+  so `to_string/1` can be called with them.
+
+  Example:
+
+  ```
+  def index(conn, params) do
+    PryIn.put_context(:user_id, conn.assigns.user.id)
+  ...
+  end
+  ```
+  """
+  def put_context(key, value, pid \\ self()) do
+    if PryIn.InteractionStore.has_pid?(pid) do
+      PryIn.InteractionStore.put_context(pid, key, value)
+    end
+  end
 end

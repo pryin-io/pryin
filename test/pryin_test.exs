@@ -145,5 +145,17 @@ defmodule PryInTest do
     end
   end
 
+  describe "put_context" do
+    test "adds to the context of a running interaction" do
+      CustomTrace.start(group: "workers", key: "daily_email_job")
+      PryIn.put_context(:user_id, 123)
+      assert InteractionStore.get_interaction(self()).context == [{"user_id", "123"}]
+    end
+
+    test "does not error when no trace is running" do
+      PryIn.put_context(:user_id, 123)
+    end
+  end
+
 
 end
