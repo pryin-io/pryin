@@ -114,24 +114,10 @@ defmodule PryIn.Instrumenter do
   Metrics are only collected inside of tracked interactions.
   """
   def pryin(:start, compile_metadata, %{key: key}) do
-    if InteractionStore.has_pid?(self()) do
-      now = utc_unix_datetime()
-      offset = now - InteractionStore.get_field(self(), :start_time)
-      [key: key,
-       offset: offset,
-       file: compile_metadata.file,
-       module: inspect(compile_metadata.module),
-       function: compile_metadata.function,
-       line: compile_metadata.line,
-       pid: inspect(self())]
-    end
+    PryIn.CustomInstrumentation.start(key, compile_metadata)
   end
   def pryin(:stop, _time_diff, nil), do: :ok
   def pryin(:stop, time_diff, data) do
-    if InteractionStore.has_pid?(self()) do
-      duration = System.convert_time_unit(time_diff, :native, :micro_seconds)
-      data = [{:duration, duration} | data]
-      InteractionStore.add_custom_metric(self(), data)
-    end
+    PryIn.CustomInstrumentation.finish(time_diff, data)
   end
 end
