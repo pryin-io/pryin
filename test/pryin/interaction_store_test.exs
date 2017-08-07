@@ -227,6 +227,17 @@ defmodule PryIn.InteractionStoreTest do
     InteractionStore.drop_interaction(pid_2)
   end
 
+  test "put_context" do
+    pid = spawn fn -> :timer.sleep(5000) end
+    interaction = Factory.build(:request, start_time: 1000)
+    InteractionStore.start_interaction(pid, interaction)
+    InteractionStore.put_context(pid, :project_title, "My awesome project")
+    InteractionStore.finish_interaction(pid)
+
+    [finished_interaction] = InteractionStore.pop_finished_interactions
+    assert finished_interaction.context == [{"project_title", "My awesome project"}]
+  end
+
 
   defp wait_until_process_stopped(pid) do
     timer_ref = Process.send_after(self(), :stop_waiting_until_process_stopped, 1000)

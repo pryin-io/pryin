@@ -52,4 +52,8 @@ message Interaction {
   optional string custom_group = 13;
   optional string custom_key = 14;
   optional string pid = 15;
+
+  map<string, string> context = 16;
+
+
 }

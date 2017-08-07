@@ -136,6 +136,16 @@ defmodule PryIn.InteractionStore do
     GenServer.cast(__MODULE__, {:add_child, parent_pid, child_pid})
   end
 
+  @doc """
+  Adds context `value` to the interaction associated with `pid`
+  under the key `key`.
+
+  Should not be used directly. Use `PryIn.put_context/3` instead.
+  """
+  def put_context(pid, key, value) do
+    GenServer.cast(__MODULE__, {:put_context, pid, key, value})
+  end
+
   # for testing
 
   @doc false
@@ -251,6 +261,15 @@ defmodule PryIn.InteractionStore do
 
   def handle_cast({:drop_interaction, pid}, state) do
     state = drop_running_interaction(pid, state)
+    {:noreply, state}
+  end
+
+  def handle_cast({:put_context, pid, key, value}, state) do
+    state = update_in(state.running_interactions[parent_pid(state, pid)].interaction,
+      fn
+        nil -> nil
+        interaction -> %{interaction | context: [{to_string(key), to_string(value)} | interaction.context]}
+      end)
     {:noreply, state}
   end
 
