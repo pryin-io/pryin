@@ -2,6 +2,9 @@
 
 ## vNext
 
+- allow adding context (user id, ...) to traces with `PryIn.put_context/2`
+- implement custom instrumentation without phoenix for nicer usage in umbrella apps
+
 ## v1.2.1
 
 - handle Ecto log entries with functions as query
