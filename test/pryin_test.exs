@@ -173,7 +173,7 @@ defmodule PryInTest do
       assert custom_instrumentation.duration > 0
       assert custom_instrumentation.key == "testkey"
       assert custom_instrumentation.file =~ "test/pryin_test.exs"
-      assert custom_instrumentation.function == {:"test instrument instruments a code block", 1}
+      assert custom_instrumentation.function == "test instrument instruments a code block/1"
       assert custom_instrumentation.module == "PryInTest"
       assert custom_instrumentation.line > 0
       assert custom_instrumentation.pid == inspect(self())

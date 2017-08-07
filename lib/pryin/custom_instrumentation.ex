@@ -11,7 +11,7 @@ defmodule PryIn.CustomInstrumentation do
       offset: offset,
       file: compile_metadata.file,
       module: inspect(compile_metadata.module),
-      function: compile_metadata.function,
+      function: format_function(compile_metadata.function),
       line: compile_metadata.line,
       pid: inspect(self())]
     end
@@ -24,4 +24,10 @@ defmodule PryIn.CustomInstrumentation do
       InteractionStore.add_custom_metric(self(), data)
     end
   end
+
+  defp format_function({name, arity}) do
+    to_string(name) <> "/" <> to_string(arity)
+  end
+  defp format_function(name) when is_binary(name), do: name
+  defp format_function(name), do: inspect(name)
 end

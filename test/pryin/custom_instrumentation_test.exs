@@ -5,7 +5,7 @@ defmodule PryIn.CustomInstrumentationTest do
 
   @env %Macro.Env{
     module: PryIn.TestController,
-    function: "custom_instrumentation_action/2",
+    function: {:"custom_instrumentation_action", 2},
     file: "test/support/test_controller.ex",
     line: 123
   }
