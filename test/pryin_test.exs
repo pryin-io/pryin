@@ -157,5 +157,47 @@ defmodule PryInTest do
     end
   end
 
+  describe "instrument" do
+    test "instruments a code block" do
+      CustomTrace.start(group: "test", key: "test")
+      require PryIn
+      PryIn.instrument("testkey") do
+        :timer.sleep(1)
+      end
+      CustomTrace.finish()
+
+      [interaction] = InteractionStore.get_state.finished_interactions
+      [custom_instrumentation] = interaction.custom_metrics
+
+      assert custom_instrumentation.offset > 0
+      assert custom_instrumentation.duration > 0
+      assert custom_instrumentation.key == "testkey"
+      assert custom_instrumentation.file =~ "test/pryin_test.exs"
+      assert custom_instrumentation.function == {:"test instrument instruments a code block", 1}
+      assert custom_instrumentation.module == "PryInTest"
+      assert custom_instrumentation.line > 0
+      assert custom_instrumentation.pid == inspect(self())
+    end
+
+    test "does not error when no trace is running" do
+      require PryIn
+      PryIn.instrument("testkey") do
+        :timer.sleep(1)
+      end
+    end
+
+    test "does not error pryin is down" do
+      ref = Process.monitor(PryIn.InteractionStore)
+      PryIn.InteractionStore |> Process.whereis() |> Process.exit(:kill)
+      receive do
+        {:DOWN, ^ref, _, _, _} -> :ok
+      end
+
+      require PryIn
+      PryIn.instrument("testkey") do
+        :timer.sleep(1)
+      end
+    end
+  end
 
 end

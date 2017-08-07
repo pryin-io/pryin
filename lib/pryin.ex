@@ -4,6 +4,7 @@ defmodule PryIn do
   end
   use Protobuf, from: Path.wildcard("lib/proto/*.proto")
   use Application
+
   @moduledoc """
   PryIn is a performance metrics platform for your Phoenix application.
 
@@ -75,7 +76,6 @@ defmodule PryIn do
   end
 
 
-
   @doc """
   Add context to a running trace.
 
@@ -94,6 +94,51 @@ defmodule PryIn do
   def put_context(key, value, pid \\ self()) do
     if PryIn.InteractionStore.has_pid?(pid) do
       PryIn.InteractionStore.put_context(pid, key, value)
+    end
+  end
+
+
+  @doc """
+  Collects metrics about custom code.
+
+  Wrap any code in to have it's runtime reported to PryIn.
+  The `key` argument will be present in the web ui, so you can
+  identify the measurement.
+
+  Note that you need to `require PryIn` before calling
+  the `instrument` macro.
+
+  Metrics are only collected inside of tracked interactions.
+
+  Example:
+
+  ```
+  def index(conn, params) do
+    api_result = PryIn.instrument("foo_api_call") do
+      FooApi.call(%{user_id: conn.assigns.user.id})
+    end
+  ...
+  end
+  ```
+  """
+  defmacro instrument(key, do: code) do
+    compile_metadata = Macro.escape(__CALLER__)
+    quote do
+      require Logger
+      start = :erlang.monotonic_time()
+      data = PryIn.CustomInstrumentation.start(unquote(key), unquote(compile_metadata))
+
+      result = unquote(code)
+
+      time_diff = :erlang.monotonic_time - start
+      try do
+        PryIn.CustomInstrumentation.finish(time_diff, data)
+      catch
+        kind, error ->
+          Logger.error "[PryIn] Error finishing custom instrumentation: " <> Exception.format(kind, error)
+      end
+
+      result
     end
   end
 end
