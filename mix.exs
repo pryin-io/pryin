@@ -17,7 +17,7 @@ defmodule PryIn.Mixfile do
      package: package(),
      docs: [main: "readme",
             logo: "docs/img/logo.png",
-            extras: ["README.md", "docs/background_jobs.md", "docs/plugs.md", "docs/instrumenting_functions.md"]]
+            extras: ["README.md", "docs/background_jobs.md", "docs/plugs.md", "docs/instrumenting_custom_code.md"]]
     ]
   end
 
