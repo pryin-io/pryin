@@ -1,6 +1,6 @@
 # Changelog
 
-## vNext
+## v1.3.0
 
 - allow adding context (user id, ...) to traces with `PryIn.put_context/2`
 - implement custom instrumentation without phoenix for nicer usage in umbrella apps
