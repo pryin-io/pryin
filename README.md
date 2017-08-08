@@ -57,16 +57,16 @@ plug PryIn.Plug
 plug MyApp.Router
 ```
 
-  6. If you want to measure the runtime of custom code, wrap it in an instrumented function.
+  6. If you want to measure the runtime of custom code, wrap it in a call to `PryIn.instrument`.
     To track how long calls to the Foobar Api take, for example, do the following:
 
 ```elixir
 defmodule MyApp.MyModule do
-  require MyApp.Endpoint
+  require PryIn
   ...
 
   def my_function() do
-    MyApp.Endpoint.instrument(:pryin, %{key: "foobar_api_call"}, fn ->
+    PryIn.instrument "foobar_api_call" do
       FoobarApi.call(some_arguments)
     end)
   end
@@ -76,4 +76,4 @@ end
 ```
 
   After this, Foobar Api call will be tracked under the key `foobar_api_call`.
-  Note that you need to `require` your endpoint before invoking the `instrument` macro.
+  Note that you need to `require PryIn` before invoking the `instrument` macro.
