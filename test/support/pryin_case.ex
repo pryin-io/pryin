@@ -3,7 +3,8 @@ defmodule PryIn.Case do
 
   using do
     quote do
-      alias PryIn.Factory
+      alias PryIn.{Factory, PropertyHelpers}
+      import PropertyTest, only: [property: 2]
     end
   end
 

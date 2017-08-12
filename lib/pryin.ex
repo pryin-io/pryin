@@ -19,9 +19,14 @@ defmodule PryIn do
     children = [
       :hackney_pool.child_spec(:pryin_pool, [timeout: 60_000, max_connections: 5]),
       worker(PryIn.InteractionStore, []),
-      worker(PryIn.InteractionForwarder, []),
       worker(PryIn.SystemMetricsCollector, []),
     ]
+
+    children = if Application.get_env(:pryin, :start_forwarder, true) do
+      children ++ [worker(PryIn.InteractionForwarder, [[name: PryIn.InteractionForwarder]])]
+    else
+      children
+    end
 
     opts = [strategy: :rest_for_one, name: PryIn.Supervisor]
     Supervisor.start_link(children, opts)

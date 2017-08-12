@@ -14,8 +14,8 @@ defmodule PryIn.InteractionForwarder do
   # CLIENT
 
   @doc false
-  def start_link() do
-    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, nil, opts)
   end
 
 

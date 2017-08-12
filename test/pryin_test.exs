@@ -146,37 +146,44 @@ defmodule PryInTest do
   end
 
   describe "put_context" do
-    test "adds to the context of a running interaction" do
-      CustomTrace.start(group: "workers", key: "daily_email_job")
-      PryIn.put_context(:user_id, 123)
-      assert InteractionStore.get_interaction(self()).context == [{"user_id", "123"}]
-    end
-
     test "does not error when no trace is running" do
       PryIn.put_context(:user_id, 123)
+    end
+
+    property "adds to the context of a running interaction" do
+      check all context_key <- PropertyHelpers.to_stringable(),
+        context_value <- PropertyHelpers.to_stringable() do
+        InteractionStore.reset_state()
+        CustomTrace.start(group: "workers", key: "daily_email_job")
+        PryIn.put_context(context_key, context_value)
+        assert InteractionStore.get_interaction(self()).context == [{to_string(context_key), to_string(context_value)}]
+      end
     end
   end
 
   describe "instrument" do
-    test "instruments a code block" do
-      CustomTrace.start(group: "test", key: "test")
-      require PryIn
-      PryIn.instrument("testkey") do
-        :timer.sleep(1)
+    property "instruments a code block" do
+      check all key <- PropertyHelpers.string() do
+        InteractionStore.reset_state()
+        CustomTrace.start(group: "test", key: "test")
+        require PryIn
+        PryIn.instrument(key) do
+          :timer.sleep(1)
+        end
+        CustomTrace.finish()
+
+        [interaction] = InteractionStore.get_state.finished_interactions
+        [custom_instrumentation] = interaction.custom_metrics
+
+        assert custom_instrumentation.offset > 0
+        assert custom_instrumentation.duration > 0
+        assert custom_instrumentation.key == key
+        assert custom_instrumentation.file =~ "test/pryin_test.exs"
+        assert custom_instrumentation.function == "property instrument instruments a code block/1"
+        assert custom_instrumentation.module == "PryInTest"
+        assert custom_instrumentation.line > 0
+        assert custom_instrumentation.pid == inspect(self())
       end
-      CustomTrace.finish()
-
-      [interaction] = InteractionStore.get_state.finished_interactions
-      [custom_instrumentation] = interaction.custom_metrics
-
-      assert custom_instrumentation.offset > 0
-      assert custom_instrumentation.duration > 0
-      assert custom_instrumentation.key == "testkey"
-      assert custom_instrumentation.file =~ "test/pryin_test.exs"
-      assert custom_instrumentation.function == "test instrument instruments a code block/1"
-      assert custom_instrumentation.module == "PryInTest"
-      assert custom_instrumentation.line > 0
-      assert custom_instrumentation.pid == inspect(self())
     end
 
     test "does not error when no trace is running" do
