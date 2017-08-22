@@ -18,24 +18,32 @@ defmodule PryIn.InteractionStoreTest do
       assert %{^pid => %{interaction: ^interaction}} = InteractionStore.get_state.running_interactions
     end
 
-    test "limits number of interactions" do
-      Application.put_env(:pryin, :max_interactions_for_interval, 2)
-      interaction_1 = Factory.build(:request, start_time: 1000, duration: 1, controller: "SomeController")
-      pid_1 = spawn fn -> :timer.sleep(5000) end
-      interaction_2 = Factory.build(:request, start_time: 1000, duration: 2, controller: "SomeController")
-      pid_2 = spawn fn -> :timer.sleep(5000) end
-      interaction_3 = Factory.build(:request, start_time: 1000, duration: 3, controller: "SomeController")
-      pid_3 = spawn fn -> :timer.sleep(5000) end
+    property "limits number of interactions" do
+      check all max_interactions <- int(1..500) do
+        InteractionStore.reset_state()
+        Application.put_env(:pryin, :max_interactions_for_interval, max_interactions)
+        pids_with_interactions = for _ <- 1..max_interactions do
+          interaction = Factory.build(:request, start_time: 1000, duration: 1, controller: "SomeController")
+          pid = spawn fn -> :timer.sleep(5000) end
+          InteractionStore.start_interaction(pid, interaction)
+          {pid, interaction}
+        end
 
-      InteractionStore.start_interaction(pid_1, interaction_1)
-      InteractionStore.start_interaction(pid_2, interaction_2)
-      InteractionStore.start_interaction(pid_3, interaction_3)
-      assert Map.keys(InteractionStore.get_state.running_interactions) == [pid_1, pid_2]
+        interaction = Factory.build(:request, start_time: 1000, duration: 1, controller: "SomeController")
+        pid = spawn fn -> :timer.sleep(5000) end
+        InteractionStore.start_interaction(pid, interaction)
 
-      InteractionStore.finish_interaction(pid_1)
-      InteractionStore.start_interaction(pid_3, interaction_3)
-      assert Map.keys(InteractionStore.get_state.running_interactions) == [pid_2]
-      assert InteractionStore.get_state.finished_interactions == [%{interaction_1 | start_time: 1}]
+        assert Map.keys(InteractionStore.get_state.running_interactions) |> Enum.sort() ==
+          Enum.map(pids_with_interactions, &elem(&1, 0)) |> Enum.sort()
+
+        [{pid_1, interaction_1} | remaining_pids_with_interactions] = pids_with_interactions
+        InteractionStore.finish_interaction(pid_1)
+        InteractionStore.start_interaction(pid, interaction)
+        assert Map.keys(InteractionStore.get_state.running_interactions) |> Enum.sort() ==
+          Enum.map(remaining_pids_with_interactions, &elem(&1, 0)) |> Enum.sort()
+        assert InteractionStore.get_state.finished_interactions == [%{interaction_1 | start_time: 1}]
+        Application.put_env(:pryin, :max_interactions_for_interval, 100)
+      end
     end
   end
 
@@ -72,17 +80,23 @@ defmodule PryIn.InteractionStoreTest do
   end
 
 
-  test "finish_interaction with controller and action" do
-    start_time_micros = 1000
-    start_time_millis = 1
-    interaction = Factory.build(:request, start_time: start_time_micros)
-    InteractionStore.start_interaction(self(), interaction)
-    InteractionStore.set_interaction_data(self(), %{controller: "SomeController", action: "some_action"})
-    InteractionStore.finish_interaction(self())
-    assert InteractionStore.get_state.finished_interactions == [%{interaction | controller: "SomeController",
-                                                                  action: "some_action",
-                                                                  start_time: start_time_millis}]
-    assert InteractionStore.get_state.running_interactions == %{}
+  property "finish_interaction with controller and action" do
+    check all controller <- PropertyHelpers.non_empty_string(),
+      action <- PropertyHelpers.non_empty_string(),
+      start_time_millis <- int(1..100_000) do
+
+      InteractionStore.reset_state()
+      start_time_micros = start_time_millis * 1000
+
+      interaction = Factory.build(:request, start_time: start_time_micros)
+      InteractionStore.start_interaction(self(), interaction)
+      InteractionStore.set_interaction_data(self(), %{controller: controller, action: action})
+      InteractionStore.finish_interaction(self())
+      assert InteractionStore.get_state.finished_interactions == [%{interaction | controller: controller,
+                                                                    action: action,
+                                                                    start_time: start_time_millis}]
+      assert InteractionStore.get_state.running_interactions == %{}
+    end
   end
 
   test "finish_interaction drops a request without controller" do

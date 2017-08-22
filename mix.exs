@@ -63,6 +63,8 @@ defmodule PryIn.Mixfile do
       {:credo, "~> 0.6.1", only: :dev},
       {:recon, "~> 2.3"},
       {:ex_machina, "~> 2.0", only: :test},
+      # {:stream_data, "~> 0.1", only: :test},
+      {:stream_data, github: "pryin-io/stream_data", branch: "use_max_consecutive_failures_in_filter_3"},
     ]
   end
 end

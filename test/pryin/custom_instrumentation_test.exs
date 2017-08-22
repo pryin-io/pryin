@@ -10,23 +10,40 @@ defmodule PryIn.CustomInstrumentationTest do
     line: 123
   }
 
-  test "custom instrumentation whithin a running trace" do
-    PryIn.CustomTrace.start(group: "test", key: "test")
-    data = CustomInstrumentation.start("expensive_api_call", @env)
-    CustomInstrumentation.finish(5000, data)
-    PryIn.CustomTrace.finish()
+  property "custom instrumentation whithin a running trace adds a custom metric" do
+    check all module_name <- PropertyHelpers.string(),
+      function_name <- PropertyHelpers.string(),
+      function_arrity <- int(0..255), # functions can have max 255 arguments
+      file <- PropertyHelpers.string(),
+      line <- PropertyHelpers.positive_int(),
+      key <- PropertyHelpers.string(),
+      duration <- int(0..10_000) do
 
-    [interaction] = InteractionStore.get_state.finished_interactions
-    [custom_instrumentation] = interaction.custom_metrics
+      env = %Macro.Env{
+        module: String.to_atom(module_name),
+        function: {String.to_atom(function_name), function_arrity},
+        file: file,
+        line: line
+      }
 
-    assert custom_instrumentation.offset > 0
-    assert custom_instrumentation.duration == 5
-    assert custom_instrumentation.key == "expensive_api_call"
-    assert custom_instrumentation.file =~ "test/support/test_controller.ex"
-    assert custom_instrumentation.function == "custom_instrumentation_action/2"
-    assert custom_instrumentation.module == "PryIn.TestController"
-    assert custom_instrumentation.line == 123
-    assert custom_instrumentation.pid == inspect(self())
+      InteractionStore.reset_state()
+      PryIn.CustomTrace.start(group: "test", key: "test")
+      data = CustomInstrumentation.start(key, env)
+      CustomInstrumentation.finish(duration, data)
+      PryIn.CustomTrace.finish()
+
+      [interaction] = InteractionStore.get_state.finished_interactions
+      [custom_instrumentation] = interaction.custom_metrics
+
+      assert custom_instrumentation.offset > 0
+      assert custom_instrumentation.duration == trunc(duration / 1000)
+      assert custom_instrumentation.key == key
+      assert custom_instrumentation.file =~ file
+      assert custom_instrumentation.function == "#{function_name}/#{function_arrity}"
+      assert custom_instrumentation.module == inspect(env.module)
+      assert custom_instrumentation.line == line
+      assert custom_instrumentation.pid == inspect(self())
+    end
   end
 
   test "custom instrumentation outside of a interaction" do

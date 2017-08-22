@@ -12,3 +12,5 @@ config :phoenix, PryIn.TestEndpoint,
            adapter: Phoenix.PubSub.PG2]
 
 config :logger, level: :warn
+
+config :pryin, start_forwarder: false
