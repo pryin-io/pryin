@@ -200,4 +200,18 @@ defmodule PryInTest do
     end
   end
 
+  test "track_metric" do
+    PryIn.track_metric("some label", 12.34)
+    [metric_value] = PryIn.MetricValueStore.pop_metric_values
+    assert metric_value.label == "some label"
+    assert metric_value.value == 12.34
+    assert metric_value.context == []
+    assert abs(metric_value.start_time - DateTime.to_unix(DateTime.utc_now, :milliseconds)) < 10
+
+    PryIn.track_metric("some label", 12.34, context: %{:some => "value", "some other" => 42})
+    [metric_value] = PryIn.MetricValueStore.pop_metric_values
+    assert {"some", "value"} in metric_value.context
+    assert {"some other", "42"} in metric_value.context
+  end
+
 end

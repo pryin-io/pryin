@@ -45,4 +45,12 @@ defmodule PryIn.Factory do
       start_time: 1_491_848_831_944_116,
     }
   end
+
+  def metric_value_factory do
+    %PryIn.MetricValue{
+      label: "some label",
+      value: 12.345,
+      start_time: 1_491_848_831_944_116,
+    }
+  end
 end

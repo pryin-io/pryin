@@ -14,7 +14,7 @@ defmodule PryIn.Api.Live do
 
   If `config :pryin, enabled: false`, data won't be sent.
   """
-  def send_interactions(data) do
+  def send_data(data) do
     if Application.get_env(:pryin, :enabled) do
       case :hackney.post(make_url("interactions/#{api_key()}"), @headers, data, [pool: :pryin_pool, with_body: true]) do
         {:ok, 201, _, _} -> :ok

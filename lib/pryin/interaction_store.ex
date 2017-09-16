@@ -75,7 +75,7 @@ defmodule PryIn.InteractionStore do
   Finished interactions are moved from the running interactions list
   to the finished interactions list.
   They still count towards the `max_interactions_for_interval` limit.
-  When the `InteractionForwarder` polls for interactions, only finished ones are
+  When the `DataForwarder` polls for interactions, only finished ones are
   returned.
   If the interaction is a request and has neither controller nor action set, it
   is dropped.
