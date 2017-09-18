@@ -156,7 +156,7 @@ defmodule PryIn do
   Example:
 
   ```
-  PryIn.track_metric("user count", length(users), context: %{some_key: "some_value"})
+  PryIn.track_metric("genserver state length", length(state.some_list), context: %{some_key: "some_value"})
   ```
   """
   def track_metric(label, value, opts \\ %{}) when is_binary(label) and is_number(value) do
