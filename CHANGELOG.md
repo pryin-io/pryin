@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.0
+
+- add `PryIn.track_metric` to track metrics outside of traces
+
 ## v1.3.0
 
 - allow adding context (user id, ...) to traces with `PryIn.put_context/2`
