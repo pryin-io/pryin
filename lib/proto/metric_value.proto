@@ -1,0 +1,6 @@
+message MetricValue {
+  required uint64 start_time = 1;
+  required string label = 2;
+  required double value = 3;
+  map<string, string> context = 4;
+}

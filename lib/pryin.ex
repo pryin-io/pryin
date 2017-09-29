@@ -7,10 +7,7 @@ defmodule PryIn do
 
   @moduledoc """
   PryIn is a performance metrics platform for your Phoenix application.
-
   This is the main entry point for the client library.
-  It starts an InteractionStore (which holds a list of interaction (e.g. web request) metrics)
-  and a InteractionForwarder (which polls the InteractionStore for metrics and forwards them to the api).
   """
 
   def start(_type, _args) do
@@ -19,8 +16,9 @@ defmodule PryIn do
     children = [
       :hackney_pool.child_spec(:pryin_pool, [timeout: 60_000, max_connections: 5]),
       worker(PryIn.InteractionStore, []),
-      worker(PryIn.InteractionForwarder, []),
       worker(PryIn.SystemMetricsCollector, []),
+      worker(PryIn.MetricValueStore, []),
+      worker(PryIn.DataForwarder, []),
     ]
 
     opts = [strategy: :rest_for_one, name: PryIn.Supervisor]
@@ -140,5 +138,31 @@ defmodule PryIn do
 
       result
     end
+  end
+
+
+  @doc """
+  Add the current value for a metric.
+
+  This is independent of a running trace.
+
+  The first argument is a (string) label that can be chosen freely.
+
+  The second argument is the actual value.
+
+  Possible keys for opts are currently only `:context`,
+  which is a map of additional metadata.
+
+  Example:
+
+  ```
+  PryIn.track_metric("genserver state length", length(state.some_list), context: %{some_key: "some_value"})
+  ```
+  """
+  def track_metric(label, value, opts \\ %{}) when is_binary(label) and is_number(value) do
+    PryIn.MetricValueStore.add_metric_value(label,
+      value,
+      DateTime.to_unix(DateTime.utc_now , :milliseconds),
+      Enum.into(opts, %{}))
   end
 end

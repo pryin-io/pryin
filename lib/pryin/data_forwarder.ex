@@ -1,7 +1,7 @@
-defmodule PryIn.InteractionForwarder do
+defmodule PryIn.DataForwarder do
   use GenServer
   require Logger
-  alias PryIn.{InteractionStore, BaseForwarder}
+  alias PryIn.{InteractionStore, BaseForwarder, MetricValueStore}
 
   @moduledoc """
   Polls for metrics and forwards them to the API.
@@ -21,19 +21,20 @@ defmodule PryIn.InteractionForwarder do
 
   # SERVER
   def init(state) do
-    Process.send_after(self(), :forward_interactions, forward_interval_millis())
+    Process.send_after(self(), :forward_data, forward_interval_millis())
     {:ok, state}
   end
 
-  def handle_info(:forward_interactions, state) do
+  def handle_info(:forward_data, state) do
     interactions = InteractionStore.pop_finished_interactions()
+    metric_values = MetricValueStore.pop_metric_values()
 
-    if Enum.any?(interactions) do
-      [interactions: interactions]
-      |> BaseForwarder.wrap_data()
-      |> BaseForwarder.api().send_interactions
+    if Enum.any?(interactions) || Enum.any?(metric_values) do
+      [interactions: interactions, metric_values: metric_values]
+      |> BaseForwarder.wrap_data
+      |> BaseForwarder.api().send_data
     end
-    Process.send_after(self(), :forward_interactions, forward_interval_millis())
+    Process.send_after(self(), :forward_data, forward_interval_millis())
 
     {:noreply, state}
   end

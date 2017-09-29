@@ -1,10 +1,10 @@
-defmodule PryIn.InteractionForwarderTest do
+defmodule PryIn.DataForwarderTest do
   use PryIn.Case
-  alias PryIn.{InteractionStore, Data}
+  alias PryIn.{InteractionStore, Data, MetricValueStore}
 
   test "does not forward an empty interactions list" do
-    send(PryIn.InteractionForwarder, :forward_interactions)
-    refute_receive {:interactions_sent, _}
+    send(PryIn.DataForwarder, :forward_data)
+    refute_receive {:data_sent, _}
   end
 
   test "sends finished interactions" do
@@ -21,8 +21,8 @@ defmodule PryIn.InteractionForwarderTest do
     InteractionStore.finish_interaction(pid_2)
     InteractionStore.start_interaction(pid_3, interaction_3)
 
-    send(PryIn.InteractionForwarder, :forward_interactions)
-    assert_receive {:interactions_sent, encoded_data}
+    send(PryIn.DataForwarder, :forward_data)
+    assert_receive {:data_sent, encoded_data}
     data = Data.decode(encoded_data)
     interactions = data.interactions
     assert length(interactions) == 2
@@ -36,6 +36,26 @@ defmodule PryIn.InteractionForwarderTest do
     assert sent_interaction_2.duration == 2
   end
 
+  test "sends metric values" do
+    MetricValueStore.add_metric_value("l1", 1, 1000, %{})
+    MetricValueStore.add_metric_value("l2", 2, 2000, %{context: %{hello: :there}})
+
+    send(PryIn.DataForwarder, :forward_data)
+    assert_receive {:data_sent, encoded_data}
+    data = Data.decode(encoded_data)
+    metric_values = data.metric_values
+    assert length(metric_values) == 2
+
+    sent_metric_value_1 = Enum.find(metric_values, & &1.label == "l1")
+    assert sent_metric_value_1.start_time == 1000
+    assert sent_metric_value_1.value == 1
+
+    sent_metric_value_2 = Enum.find(metric_values, & &1.label == "l2")
+    assert sent_metric_value_2.start_time == 2000
+    assert sent_metric_value_2.value == 2
+    assert sent_metric_value_2.context == [{"hello", "there"}]
+  end
+
   test "includes metadata" do
     interaction_1 = Factory.build(:request, start_time: 1000, duration: 1, interaction_id: "i1")
     pid_1 = spawn fn -> :timer.sleep(5000) end
@@ -43,8 +63,8 @@ defmodule PryIn.InteractionForwarderTest do
     InteractionStore.start_interaction(pid_1, interaction_1)
     InteractionStore.finish_interaction(pid_1)
 
-    send(PryIn.InteractionForwarder, :forward_interactions)
-    assert_receive {:interactions_sent, encoded_data}
+    send(PryIn.DataForwarder, :forward_data)
+    assert_receive {:data_sent, encoded_data}
     data = Data.decode(encoded_data)
     assert data.env == :dev
     assert data.pryin_version == "1.3.0"
@@ -58,8 +78,8 @@ defmodule PryIn.InteractionForwarderTest do
       InteractionStore.start_interaction(self(), interaction_1)
       InteractionStore.finish_interaction(self())
 
-      send(PryIn.InteractionForwarder, :forward_interactions)
-      assert_receive {:interactions_sent, encoded_data}
+      send(PryIn.DataForwarder, :forward_data)
+      assert_receive {:data_sent, encoded_data}
       data = Data.decode(encoded_data)
       assert data.env == unquote(env)
       Application.put_env(:pryin, :env, :dev)
@@ -73,8 +93,8 @@ defmodule PryIn.InteractionForwarderTest do
       InteractionStore.start_interaction(self(), interaction_1)
       InteractionStore.finish_interaction(self())
 
-      send(PryIn.InteractionForwarder, :forward_interactions)
-      assert_receive {:interactions_sent, encoded_data}
+      send(PryIn.DataForwarder, :forward_data)
+      assert_receive {:data_sent, encoded_data}
       data = Data.decode(encoded_data)
       assert data.env == String.to_atom(unquote(env))
       Application.put_env(:pryin, :env, :dev)
@@ -88,8 +108,8 @@ defmodule PryIn.InteractionForwarderTest do
     InteractionStore.finish_interaction(self())
 
     captured_log = ExUnit.CaptureLog.capture_log [level: :error], fn ->
-      send(PryIn.InteractionForwarder, :forward_interactions)
-      assert_receive {:interactions_sent, encoded_data}
+      send(PryIn.DataForwarder, :forward_data)
+      assert_receive {:data_sent, encoded_data}
       data = Data.decode(encoded_data)
       assert data.env == :dev
     end
