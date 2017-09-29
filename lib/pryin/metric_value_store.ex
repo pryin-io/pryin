@@ -21,11 +21,16 @@ defmodule PryIn.MetricValueStore do
 
 
   def handle_cast({:add_metric_value, label, value, start_time, opts}, state) do
-    metric_value = MetricValue.new(label: label,
-      value: value,
-      start_time: start_time,
-      context: normalize_metric_value_context(opts[:context]))
-    {:noreply, %{state | stored_metric_values: [metric_value | state.stored_metric_values]}}
+    if length(state.stored_metric_values) >= max_tracked_metric_values_limit() do
+      Logger.info("[PryIn] Dropping tracked metric value for #{label} because buffer is full.")
+      {:noreply, state}
+    else
+        metric_value = MetricValue.new(label: label,
+          value: value,
+          start_time: start_time,
+          context: normalize_metric_value_context(opts[:context]))
+        {:noreply, %{state | stored_metric_values: [metric_value | state.stored_metric_values]}}
+    end
   end
 
   def handle_call(:pop_metric_values, _from, state) do
@@ -36,5 +41,9 @@ defmodule PryIn.MetricValueStore do
   defp normalize_metric_value_context(nil), do: []
   defp normalize_metric_value_context(context_map) do
     for {key, value} <- context_map, do: {to_string(key), to_string(value)}
+  end
+
+  defp max_tracked_metric_values_limit do
+    Application.get_env(:pryin, :max_tracked_metric_values_for_interval, 10_000)
   end
 end

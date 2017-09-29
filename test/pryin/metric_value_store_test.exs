@@ -28,4 +28,17 @@ defmodule PryIn.MetricValueStoreTest do
     assert [_] = MetricValueStore.pop_metric_values
     assert [] = MetricValueStore.pop_metric_values
   end
+
+  test "limits number of stored metric values" do
+    Application.put_env(:pryin, :max_tracked_metric_values_for_interval, 3)
+    MetricValueStore.add_metric_value("some label", 222, 111, %{})
+    MetricValueStore.add_metric_value("some label", 333, 111, %{})
+    MetricValueStore.add_metric_value("some other label", 444, 111, %{})
+    MetricValueStore.add_metric_value("some label", 555, 111, %{})
+    popped_metric_values = MetricValueStore.pop_metric_values()
+    assert length(popped_metric_values) == 3
+    refute 555 in Enum.map(popped_metric_values, & &1.value)
+
+    assert MetricValueStore.pop_metric_values() == []
+  end
 end
