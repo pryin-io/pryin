@@ -8,19 +8,24 @@
 ## Installation
 
   1. Sign up for a [PryIn](https://pryin.io) account and create a new project there.
-  2. Add `pryin` to your dependencies and applications list in `mix.exs`:
+  2. Add `pryin` to your dependencies in `mix.exs`:
 
+```elixir
+def deps do
+  [
+    {:pryin, "~> 1.0"}
+  ]
+end
+```
+
+  3. If you define an applications list in your `mix.exs`, add `:pryin` there, too:
 ```elixir
 def applications do
   [..., :pryin]
 end
-...
-def deps do
-  [{:pryin, "~> 1.0"}]
-end
 ```
 
-  3. Add general configuration for the pryin app in `config/config.exs`:
+  4. Add general configuration for the pryin app in `config/config.exs`:
 
 ```elixir
 config :pryin,
@@ -37,7 +42,7 @@ config :my_app, MyApp.Endpoint,
 ```
 
 
-  4. Enable PryIn in the environments you want to collect metrics for.
+  5. Enable PryIn in the environments you want to collect metrics for.
     If you want to collect data for the production environment, for example,
     add the following to `config/prod.exs`:
 
@@ -49,7 +54,7 @@ config :pryin,
 
   Possible values for `env` are `:dev`, `:staging` or `:prod`.
 
-  5. Add the PryIn plug to your application's endpoint (`lib/my_app/endpoint.ex`) just before the router plug:
+  6. Add the PryIn plug to your application's endpoint (`lib/my_app/endpoint.ex`) just before the router plug:
 
 ```elixir
 ...
@@ -57,23 +62,21 @@ plug PryIn.Plug
 plug MyApp.Router
 ```
 
-  6. If you want to measure the runtime of custom code, wrap it in a call to `PryIn.instrument`.
-    To track how long calls to the Foobar Api take, for example, do the following:
+## Configuration
 
-```elixir
-defmodule MyApp.MyModule do
-  require PryIn
-  ...
+Above steps will give you a basic installation with standard configuration.
+If you want to tweak some settings, here are all the possible configuration options:
 
-  def my_function() do
-    PryIn.instrument "foobar_api_call" do
-      FoobarApi.call(some_arguments)
-    end)
-  end
+| key | default | description |
+|-----|---------|-------------|
+| `:otp_app` | - | The name of your application. Mainly used to get your application's version. |
+| `:api_key` | - | Your project's api key. You can find this on PryIn under "Settings". |
+| `:enabled` | - | Whether to forward data to PryIn. Should be set to `true` in all enviroments you want to collect data in. |
+| `:env` | - | Name of the current environment. Can be one of `:dev`, `:staging` or `:prod`. |
+| `:forward_interval` | 1000 | Duration of forward intervals in milliseconds. During the interval, data is collected and stored locally. At the end of the interval, the data is then forwared to PryIn. |
+| `:max_interactions_for_interval` | 100 | Maximum number of traces stored locally during each forward interval. If this limit is reached, new traces will be dropped until data is sent to PryIn and the store is cleared. |
+| `:max_tracked_metric_values_for_interval` | 100 | Maximum number of Tracked Metric values stored locally during each forward interval. If this limit is reached, new values will be dropped until data is sent to PryIn and the store is cleared. |
 
-  ...
-end
-```
+## Further reading
 
-  After this, Foobar Api call will be tracked under the key `foobar_api_call`.
-  Note that you need to `require PryIn` before invoking the `instrument` macro.
+You can find more details (about background jobs, custom instrumentation, and a lot more), in PryIn's [FAQs](https://pryin.zendesk.com).

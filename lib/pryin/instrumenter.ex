@@ -2,34 +2,29 @@ defmodule PryIn.Instrumenter do
   alias PryIn.{InteractionStore, Interaction}
   import PryIn.{TimeHelper, InteractionHelper}
 
-  @moduledoc """
-  Collects metrics about view rendering and allows for custom instrumentation
+  @moduledoc false
 
-  Activate via:
+  # Collects metrics about view rendering and allows for custom instrumentation
 
-  ```elixir
-  config :my_app, MyApp.Endpoint,
-    instrumenters: [PryIn.Instrumenter]
-  ```
+  # Activate via:
 
-  To instrument custom code, wrap it with the `instrument` macro:
-  ```elixir
-    require MyApp.Endpoint
-    MyApp.Endpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
-      ...
-    end
-  ```
+  # ```elixir
+  # config :my_app, MyApp.Endpoint,
+  #   instrumenters: [PryIn.Instrumenter]
+  # ```
 
-  The `key` (`"expensive_api_call"`) is just a string that you can freely choose to
-  indentify the metric later in the UI.
+  # To instrument custom code, wrap it with the `instrument` macro:
+  # ```elixir
+  #   require MyApp.Endpoint
+  #   MyApp.Endpoint.instrument :pryin, %{key: "expensive_api_call"}, fn ->
+  #     ...
+  #   end
+  # ```
 
-  """
+  # The `key` (`"expensive_api_call"`) is just a string that you can freely choose to
+  # indentify the metric later in the UI.
 
-  @doc """
-  Collects metrics about Phoenix view rendering.
 
-  Metrics are only collected inside of tracked interactions.
-  """
   def phoenix_controller_render(:start, _compile_metadata, runtime_metadata) do
     if InteractionStore.has_pid?(self()) do
       now = utc_unix_datetime()
@@ -54,9 +49,6 @@ defmodule PryIn.Instrumenter do
   def phoenix_controller_render(:stop, _time_diff, _), do: :ok
 
 
-  @doc """
-  Collect metrics about channel `handle_in` calls.
-  """
   def phoenix_channel_receive(:start, _compile_metadata, runtime_metadata) do
     interaction = Interaction.new(start_time: utc_unix_datetime(),
       type: :channel_receive,
@@ -77,9 +69,6 @@ defmodule PryIn.Instrumenter do
   end
 
 
-  @doc """
-  Collect metrics about channel joins.
-  """
   def phoenix_channel_join(:start, _compile_metadata, runtime_metadata) do
     interaction = Interaction.new(start_time: utc_unix_datetime(),
       type: :channel_join,
@@ -99,20 +88,6 @@ defmodule PryIn.Instrumenter do
   end
 
 
-
-  @doc """
-  Collects metrics about custom functions.
-
-  Wrap any code in an instrumented function to have it's runtime
-  reported to PryIn.
-  The `key` parameter will be present in the web ui, so you can
-  identify the measurement.
-
-  Note that you need to `require` your endpoint before calling
-  the `instrument` macro.
-
-  Metrics are only collected inside of tracked interactions.
-  """
   def pryin(:start, compile_metadata, %{key: key}) do
     PryIn.CustomInstrumentation.start(key, compile_metadata)
   end

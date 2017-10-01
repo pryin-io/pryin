@@ -5,29 +5,26 @@ defmodule PryIn.InteractionStore do
   alias PryIn.{Wormhole, Interaction}
 
   defmodule RunningInteraction do
-    @moduledoc """
-    Data about a single running interaction
-    """
+    @moduledoc false
 
     defstruct [:type, :interaction, :ref, :child_pids, :parent_pid]
   end
 
-  @moduledoc """
-  Stores interactions that will later be forwarded by the forwarder.
+  @moduledoc false
 
-  When a certain amount of interactions is in the store,
-  further interactions will simply be dropped to avoid overflow.
+  # Stores interactions that will later be forwarded by the forwarder.
 
-  When the stored interactions are forwarded,
-  the internal list is cleared and the limit is reset.
+  # When a certain amount of interactions is in the store,
+  # further interactions will simply be dropped to avoid overflow.
 
-  This amount can be configured with:
-  `config :pryin, :max_interactions_for_interval, 100`
-  """
+  # When the stored interactions are forwarded,
+  # the internal list is cleared and the limit is reset.
+
+  # This amount can be configured with:
+  # `config :pryin, :max_interactions_for_interval, 100`
 
   # CLIENT
 
-  @doc false
   def start_link() do
     GenServer.start_link(__MODULE__, %__MODULE__{}, name: __MODULE__)
   end

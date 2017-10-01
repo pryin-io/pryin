@@ -10,6 +10,7 @@ defmodule PryIn do
   This is the main entry point for the client library.
   """
 
+  @doc false
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 

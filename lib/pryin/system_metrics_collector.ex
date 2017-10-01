@@ -3,12 +3,7 @@ defmodule PryIn.SystemMetricsCollector do
   require Logger
   alias PryIn.{SystemMetrics, BaseForwarder}
 
-  @moduledoc """
-  Periodically sends system metrics to PryIn.
-  Can be turned off with
-  `config :pryin, :collect_system_metrics, false`.
-  API restrictions may apply.
-  """
+  @moduledoc false
 
 
   # CLIENT

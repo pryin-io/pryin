@@ -1,19 +1,14 @@
 defmodule PryIn.Api.Live do
   require Logger
 
-  @moduledoc """
-  Live Api module for PryIn.
-  """
+  @moduledoc false
   @behaviour PryIn.Api
   @prod_base_url "https://client.pryin.io/api/client/v2"
   @headers  [{"Content-Type", "application/octet-stream"}]
 
 
-  @doc """
-  Send interaction data to the PryIn Api.
-
-  If `config :pryin, enabled: false`, data won't be sent.
-  """
+  # Send interaction data to the PryIn Api.
+  # If `config :pryin, enabled: false`, data won't be sent.
   def send_data(data) do
     if Application.get_env(:pryin, :enabled) do
       case :hackney.post(make_url("data?api_key=#{api_key()}"), @headers, data, [pool: :pryin_pool, with_body: true]) do
@@ -25,11 +20,8 @@ defmodule PryIn.Api.Live do
     end
   end
 
-  @doc """
-  Send system metric data to the PryIn Api.
-
-  If `config :pryin, enabled: false`, data won't be sent
-  """
+  # Send system metric data to the PryIn Api.
+  # If `config :pryin, enabled: false`, data won't be sent
   def send_system_metrics(data) do
     if Application.get_env(:pryin, :enabled) do
       case :hackney.post(make_url("system_metrics?api_key=#{api_key()}"), @headers, data, [pool: :pryin_pool, with_body: true]) do

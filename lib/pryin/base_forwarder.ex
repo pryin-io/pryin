@@ -2,12 +2,10 @@ defmodule PryIn.BaseForwarder do
   alias PryIn.Data
   require Logger
 
+  @moduledoc false
+
   @api Application.get_env(:pryin, :api, PryIn.Api.Live)
   @allowed_envs [:dev, :staging, :prod]
-
-  @moduledoc """
-  Helper functions for modules forwarding data via API to PryIn.
-  """
 
   def wrap_data(data) do
     [

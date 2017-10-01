@@ -1,7 +1,5 @@
 defmodule PryIn.Wormhole do
-  @moduledoc """
-  Run a function capturing any errors.
-  """
+  @moduledoc false
 
   def capture(callback) do
     Task.Supervisor.start_link

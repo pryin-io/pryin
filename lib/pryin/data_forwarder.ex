@@ -3,12 +3,12 @@ defmodule PryIn.DataForwarder do
   require Logger
   alias PryIn.{InteractionStore, BaseForwarder, MetricValueStore}
 
-  @moduledoc """
-  Polls for metrics and forwards them to the API.
-  Polling interval can be configured with
-  `config :pryin, :forward_interval, 1000`.
-  API restrictions may apply.
-  """
+  @moduledoc false
+
+  # Polls for metrics and forwards them to the API.
+  # Polling interval can be configured with
+  # `config :pryin, :forward_interval, 1000`.
+  # API restrictions may apply.
 
 
   # CLIENT
