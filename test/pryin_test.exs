@@ -179,6 +179,22 @@ defmodule PryInTest do
       assert custom_instrumentation.pid == inspect(self())
     end
 
+    test "supports supplying a sample rate" do
+      CustomTrace.start(group: "test", key: "test")
+      require PryIn
+      for _ <- 0..1000 do
+        PryIn.instrument("testkey", sample_rate: 0.5) do
+          :ok
+        end
+      end
+      CustomTrace.finish()
+
+      [interaction] = InteractionStore.get_state.finished_interactions
+      collected_metrics_length = length(interaction.custom_metrics)
+      assert collected_metrics_length > 300
+      assert collected_metrics_length < 700
+    end
+
     test "does not error when no trace is running" do
       require PryIn
       PryIn.instrument("testkey") do

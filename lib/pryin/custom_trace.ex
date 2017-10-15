@@ -22,23 +22,29 @@ defmodule PryIn.CustomTrace do
 
   *IMPORTANT:* If group and key are not set, the trace will not be forwarded to PryIn and so won't appear
   in the web interface.
+
+  You can also provide a sample rate between 0 and 1 in case you do not want to include every trace.
+  This is useful for code that gets called very often, where a smaller sample already provides significant insights.
   """
 
 
   @doc """
   Starts a custom trace.
-  Can alreay set group and key for the trace:
+  Can alreay set group and key for the trace.
+  You can also provide a sample rate here:
 
-  `PryIn.CustomTrace.start(group: "some_group", key: "some_key")`
+  `PryIn.CustomTrace.start(group: "some_group", key: "some_key", sample_rate: 0.1)`
   """
   def start(opts \\ []) do
-    req_start_time = TimeHelper.utc_unix_datetime()
-    interaction = Interaction.new(start_time: req_start_time,
-      type: :custom_trace,
-      custom_group: opts[:group],
-      custom_key: opts[:key],
-      pid: inspect(self()))
-    InteractionStore.start_interaction(self(), interaction)
+    if PryIn.SamplingHelper.should_sample(opts[:sample_rate]) do
+      req_start_time = TimeHelper.utc_unix_datetime()
+      interaction = Interaction.new(start_time: req_start_time,
+        type: :custom_trace,
+        custom_group: opts[:group],
+        custom_key: opts[:key],
+        pid: inspect(self()))
+      InteractionStore.start_interaction(self(), interaction)
+    end
   end
 
   @doc """

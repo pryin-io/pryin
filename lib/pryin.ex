@@ -120,24 +120,31 @@ defmodule PryIn do
   end
   ```
   """
-  defmacro instrument(key, do: code) do
+  defmacro instrument(key, opts \\ [], do: code) do
     compile_metadata = Macro.escape(__CALLER__)
+    sample_rate = opts[:sample_rate]
     quote do
       require Logger
-      start = :erlang.monotonic_time()
-      data = PryIn.CustomInstrumentation.start(unquote(key), unquote(compile_metadata))
+      should_sample = PryIn.SamplingHelper.should_sample(unquote(sample_rate))
 
-      result = unquote(code)
+      if should_sample do
+        start = :erlang.monotonic_time()
+        data = PryIn.CustomInstrumentation.start(unquote(key), unquote(compile_metadata))
 
-      time_diff = :erlang.monotonic_time - start
-      try do
-        PryIn.CustomInstrumentation.finish(time_diff, data)
-      catch
-        kind, error ->
-          Logger.error "[PryIn] Error finishing custom instrumentation: " <> Exception.format(kind, error)
+        result = unquote(code)
+
+        time_diff = :erlang.monotonic_time - start
+        try do
+          PryIn.CustomInstrumentation.finish(time_diff, data)
+        catch
+          kind, error ->
+            Logger.error "[PryIn] Error finishing custom instrumentation: " <> Exception.format(kind, error)
+        end
+
+        result
+      else
+        unquote(code)
       end
-
-      result
     end
   end
 
@@ -151,8 +158,11 @@ defmodule PryIn do
 
   The second argument is the actual value.
 
-  Possible keys for opts are currently only `:context`,
-  which is a map of additional metadata.
+  Possible keys for opts are currently:
+
+  - `:context`: A map of additional metadata.
+  - `:sample_rate`: If you don't want to include this metric every time,
+  supply a sample rate between 0 and 1.
 
   Example:
 
