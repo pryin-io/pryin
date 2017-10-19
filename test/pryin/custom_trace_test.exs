@@ -15,6 +15,18 @@ defmodule PryIn.CustomTraceTest do
     assert interaction.pid == inspect(self())
   end
 
+  test "supports rate sampling" do
+    Application.put_env(:pryin, :max_interactions_for_interval, 1000)
+    for _ <- 0..1000 do
+      CustomTrace.start(group: "workers", key: "daily_email_job", sample_rate: 0.5)
+      CustomTrace.finish()
+    end
+
+    interaction_length = length(InteractionStore.get_state.finished_interactions)
+    assert interaction_length > 300
+    assert interaction_length < 700
+  end
+
   test "can set group and key on trace start" do
     CustomTrace.start()
     CustomTrace.set_group("workers")
