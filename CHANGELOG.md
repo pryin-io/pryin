@@ -1,5 +1,9 @@
 # Changelog
 
+## vNext
+
+- rate sampling for tracked metrics and custom traces
+
 ## v1.4.0
 
 - add `PryIn.track_metric` to track metrics outside of traces
