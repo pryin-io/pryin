@@ -3,6 +3,7 @@
 ## vNext
 
 - rate sampling for tracked metrics and custom traces
+- PryIn.GenServer for GenServer instrumentation
 
 ## v1.4.0
 
