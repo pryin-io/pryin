@@ -1,5 +1,9 @@
 # Changelog
 
+## vNext
+
+- allow setting custom node names
+
 ## v1.5.0
 
 - rate sampling for tracked metrics and custom traces

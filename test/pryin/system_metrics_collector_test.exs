@@ -10,6 +10,7 @@ defmodule PryIn.SystemMetricsCollectorTest do
     assert data.env == :dev
     assert data.pryin_version == "1.5.0"
     assert data.app_version == "1.2.7" # otp_app ist set to :exprotobuf
+    assert data.node_name == "nonode@nohost"
     assert is_number(data.system_metrics.process_count)
     assert is_number(data.system_metrics.run_queue)
     assert is_number(data.system_metrics.error_logger_queue_len)
@@ -28,5 +29,14 @@ defmodule PryIn.SystemMetricsCollectorTest do
       assert is_number(scheduler_usage)
     end
     assert is_number(data.system_metrics.time)
+  end
+
+  test "users can set a custom node name" do
+    Application.put_env(:pryin, :collect_interval, 0)
+    Application.put_env(:pryin, :node_name, "myapp@myhost")
+    send(SystemMetricsCollector, :collect_metrics)
+    assert_receive({:system_metrics_sent, encoded_data}, 500)
+    data = Data.decode(encoded_data)
+    assert data.node_name == "myapp@myhost"
   end
 end

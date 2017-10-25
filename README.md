@@ -76,6 +76,7 @@ If you want to tweak some settings, here are all the possible configuration opti
 | `:forward_interval` | 1000 | Duration of forward intervals in milliseconds. During the interval, data is collected and stored locally. At the end of the interval, the data is then forwared to PryIn. |
 | `:max_interactions_for_interval` | 100 | Maximum number of traces stored locally during each forward interval. If this limit is reached, new traces will be dropped until data is sent to PryIn and the store is cleared. |
 | `:max_tracked_metric_values_for_interval` | 100 | Maximum number of Tracked Metric values stored locally during each forward interval. If this limit is reached, new values will be dropped until data is sent to PryIn and the store is cleared. |
+| `:node_name` | `node()` | Name of the current node. BEAM metrics will be grouped under this value. |
 
 ## Further reading
 
