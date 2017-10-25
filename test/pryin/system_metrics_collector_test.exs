@@ -38,5 +38,6 @@ defmodule PryIn.SystemMetricsCollectorTest do
     assert_receive({:system_metrics_sent, encoded_data}, 500)
     data = Data.decode(encoded_data)
     assert data.node_name == "myapp@myhost"
+    Application.delete_env(:pryin, :node_name)
   end
 end
