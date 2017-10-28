@@ -34,7 +34,7 @@ defmodule PryIn.BaseForwarder do
   end
 
   defp node_name do
-    node() |> to_string()
+    Application.get_env(:pryin, :node_name) || to_string(node())
   end
 
   defp env do
