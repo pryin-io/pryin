@@ -56,11 +56,25 @@ config :pryin,
 
   6. Add the PryIn plug to your application's endpoint (`lib/my_app/endpoint.ex`) just before the router plug:
 
+
 ```elixir
 ...
 plug PryIn.Plug
 plug MyApp.Router
 ```
+
+
+  7. To collect data about Ecto queries, view renderings or custom instrumentation in your channel joins,
+  you need to join the transport's trace first:
+```elixir
+def join("rooms:lobby", message, socket) do
+  PryIn.join_trace(self(), socket.transport_pid)
+  Repo.all(...)
+  ...
+```
+
+This is only neccessary in your channel join functions,
+because the channel process does not exist yet when tracing starts.
 
 ## Configuration
 
