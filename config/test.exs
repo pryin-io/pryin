@@ -8,7 +8,6 @@ config :pryin,
 
 config :phoenix, PryIn.TestEndpoint,
   instrumenters: [PryIn.Instrumenter],
-  pubsub: [name: PryIn.PubSub,
-           adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: PryIn.PubSub, adapter: Phoenix.PubSub.PG2]
 
 config :logger, level: :warn

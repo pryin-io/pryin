@@ -2,10 +2,9 @@ defmodule PryIn.CustomInstrumentationTest do
   use PryIn.Case
   alias PryIn.{CustomInstrumentation, InteractionStore}
 
-
   @env %Macro.Env{
     module: PryIn.TestController,
-    function: {:"custom_instrumentation_action", 2},
+    function: {:custom_instrumentation_action, 2},
     file: "test/support/test_controller.ex",
     line: 123
   }
@@ -16,7 +15,7 @@ defmodule PryIn.CustomInstrumentationTest do
     CustomInstrumentation.finish(5000, data)
     PryIn.CustomTrace.finish()
 
-    [interaction] = InteractionStore.get_state.finished_interactions
+    [interaction] = InteractionStore.get_state().finished_interactions
     [custom_instrumentation] = interaction.custom_metrics
 
     assert custom_instrumentation.offset > 0

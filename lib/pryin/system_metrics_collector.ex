@@ -5,14 +5,12 @@ defmodule PryIn.SystemMetricsCollector do
 
   @moduledoc false
 
-
   # CLIENT
 
   @doc false
   def start_link() do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
-
 
   # SERVER
   def init(state) do
@@ -46,9 +44,10 @@ defmodule PryIn.SystemMetricsCollector do
       gc_words_reclaimed: increments[:gc_words_reclaimed],
       reductions: increments[:reductions],
       scheduler_usage: parse_scheduler_usage(increments[:scheduler_usage]),
-      time: DateTime.utc_now |> DateTime.to_unix(:milliseconds),
+      time: DateTime.utc_now() |> DateTime.to_unix(:milliseconds)
     )
   end
+
   _ = @lint
 
   defp forward_metrics(system_metrics) do

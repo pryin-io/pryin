@@ -2,11 +2,11 @@ defmodule PryIn.TestSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel "test:*", PryIn.TestChannel
+  channel("test:*", PryIn.TestChannel)
 
   ## Transports
   # need force_ssl here, as we turned it off globally for the ELB
-  transport :websocket, Phoenix.Transports.WebSocket, force_ssl: true
+  transport(:websocket, Phoenix.Transports.WebSocket, force_ssl: true)
   # transport :longpoll, Phoenix.Transports.LongPoll
 
   # Socket params are passed from the client and can

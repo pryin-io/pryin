@@ -9,28 +9,28 @@ defmodule PryIn.InstrumenterTest do
   @endpoint PryIn.TestEndpoint
 
   setup _ do
-    PryIn.TestEndpoint.start_link
+    PryIn.TestEndpoint.start_link()
     conn = build_conn()
     {:ok, conn: conn}
   end
 
   test "view rendering instrumentation", %{conn: conn} do
-    get conn, "/render_test"
+    get(conn, "/render_test")
 
-    [interaction] = InteractionStore.get_state.finished_interactions
+    [interaction] = InteractionStore.get_state().finished_interactions
     [view_rendering] = interaction.view_renderings
 
     assert view_rendering.offset > 0
     assert view_rendering.duration > 0
     assert view_rendering.format == "html"
     assert view_rendering.template == "test_template.html"
-    assert view_rendering.pid      == inspect(self())
+    assert view_rendering.pid == inspect(self())
   end
 
   test "custom instrumentation with the endpoint macro", %{conn: conn} do
-    get conn, "/custom_instrumentation"
+    get(conn, "/custom_instrumentation")
 
-    [interaction] = InteractionStore.get_state.finished_interactions
+    [interaction] = InteractionStore.get_state().finished_interactions
     [custom_instrumentation] = interaction.custom_metrics
 
     assert custom_instrumentation.offset > 0
@@ -46,15 +46,15 @@ defmodule PryIn.InstrumenterTest do
   test "channel join instrumentation" do
     {:ok, socket} = ChannelTest.connect(PryIn.TestSocket, %{})
     {:ok, _, _} = ChannelTest.subscribe_and_join(socket, "test:topic", %{})
-    [interaction] = InteractionStore.get_state.finished_interactions
+    [interaction] = InteractionStore.get_state().finished_interactions
 
-    assert interaction.type           == :channel_join
+    assert interaction.type == :channel_join
     assert interaction.interaction_id != nil
-    assert interaction.channel        == "PryIn.TestChannel"
-    assert interaction.topic          == "test:topic"
-    assert interaction.start_time     != nil
-    assert interaction.duration       != nil
-    assert interaction.pid            == inspect(self())
+    assert interaction.channel == "PryIn.TestChannel"
+    assert interaction.topic == "test:topic"
+    assert interaction.start_time != nil
+    assert interaction.duration != nil
+    assert interaction.pid == inspect(self())
   end
 
   test "channel handle_in instrumentation" do
@@ -62,35 +62,37 @@ defmodule PryIn.InstrumenterTest do
     {:ok, _, socket} = ChannelTest.subscribe_and_join(socket, "test:topic", %{})
     [_] = InteractionStore.pop_finished_interactions()
     ref = ChannelTest.push(socket, "test:msg", %{})
-    ChannelTest.assert_reply ref, :ok
+    ChannelTest.assert_reply(ref, :ok)
 
-    wait_until fn ->
-      [interaction] = InteractionStore.get_state.finished_interactions
-      assert interaction.type           == :channel_receive
+    wait_until(fn ->
+      [interaction] = InteractionStore.get_state().finished_interactions
+      assert interaction.type == :channel_receive
       assert interaction.interaction_id != nil
-      assert interaction.channel        == "PryIn.TestChannel"
-      assert interaction.topic          == "test:topic"
-      assert interaction.event          == "test:msg"
-      assert interaction.start_time     != nil
-      assert interaction.duration       != nil
-      assert interaction.pid            == inspect(socket.channel_pid)
-    end
+      assert interaction.channel == "PryIn.TestChannel"
+      assert interaction.topic == "test:topic"
+      assert interaction.event == "test:msg"
+      assert interaction.start_time != nil
+      assert interaction.duration != nil
+      assert interaction.pid == inspect(socket.channel_pid)
+    end)
   end
 
   defp wait_until(predicate_fn) do
     timer_ref = Process.send_after(self(), :stop_waiting_until, 1000)
     do_wait_until(predicate_fn, timer_ref)
   end
+
   defp do_wait_until(predicate_fn, timer_ref) do
     receive do
       :stop_waiting_until -> raise "timeout waiting"
-    after 0 ->
-      try do
-        predicate_fn.()
-        Process.cancel_timer(timer_ref)
-      rescue
-        [ExUnit.AssertionError, MatchError] -> do_wait_until(predicate_fn, timer_ref)
-      end
+    after
+      0 ->
+        try do
+          predicate_fn.()
+          Process.cancel_timer(timer_ref)
+        rescue
+          [ExUnit.AssertionError, MatchError] -> do_wait_until(predicate_fn, timer_ref)
+        end
     end
   end
 end

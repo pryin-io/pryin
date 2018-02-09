@@ -8,7 +8,7 @@ defmodule PryIn.Factory do
       action: "some_action",
       controller: "SomeApp.SomeController",
       duration: 12_345,
-      start_time: 1_491_848_831_944_116,
+      start_time: 1_491_848_831_944_116
     }
   end
 
@@ -20,7 +20,7 @@ defmodule PryIn.Factory do
       topic: "some:topic",
       event: "some:event",
       duration: 12_345,
-      start_time: 1_491_848_831_944_116,
+      start_time: 1_491_848_831_944_116
     }
   end
 
@@ -31,7 +31,7 @@ defmodule PryIn.Factory do
       channel: "MyApp.SomeChannel",
       topic: "some:topic",
       duration: 12_345,
-      start_time: 1_491_848_831_944_116,
+      start_time: 1_491_848_831_944_116
     }
   end
 
@@ -42,7 +42,7 @@ defmodule PryIn.Factory do
       custom_group: "some group",
       custom_key: "some_key",
       duration: 12_345,
-      start_time: 1_491_848_831_944_116,
+      start_time: 1_491_848_831_944_116
     }
   end
 
@@ -50,7 +50,7 @@ defmodule PryIn.Factory do
     %PryIn.MetricValue{
       label: "some label",
       value: 12.345,
-      start_time: 1_491_848_831_944_116,
+      start_time: 1_491_848_831_944_116
     }
   end
 end

@@ -9,11 +9,11 @@ defmodule PryIn.DataForwarderTest do
 
   test "sends finished interactions" do
     interaction_1 = Factory.build(:request, start_time: 1000, duration: 1, interaction_id: "i1")
-    pid_1 = spawn fn -> :timer.sleep(5000) end
+    pid_1 = spawn(fn -> :timer.sleep(5000) end)
     interaction_2 = Factory.build(:request, start_time: 1000, duration: 2, interaction_id: "i2")
-    pid_2 = spawn fn -> :timer.sleep(5000) end
+    pid_2 = spawn(fn -> :timer.sleep(5000) end)
     interaction_3 = Factory.build(:request, start_time: 1000, duration: 3, interaction_id: "i3")
-    pid_3 = spawn fn -> :timer.sleep(5000) end
+    pid_3 = spawn(fn -> :timer.sleep(5000) end)
 
     InteractionStore.start_interaction(pid_1, interaction_1)
     InteractionStore.finish_interaction(pid_1)
@@ -27,11 +27,11 @@ defmodule PryIn.DataForwarderTest do
     interactions = data.interactions
     assert length(interactions) == 2
 
-    sent_interaction_1 = Enum.find(interactions, & &1.interaction_id == "i1")
+    sent_interaction_1 = Enum.find(interactions, &(&1.interaction_id == "i1"))
     assert sent_interaction_1.start_time == 1
     assert sent_interaction_1.duration == 1
 
-    sent_interaction_2 = Enum.find(interactions, & &1.interaction_id == "i2")
+    sent_interaction_2 = Enum.find(interactions, &(&1.interaction_id == "i2"))
     assert sent_interaction_2.start_time == 1
     assert sent_interaction_2.duration == 2
   end
@@ -46,11 +46,11 @@ defmodule PryIn.DataForwarderTest do
     metric_values = data.metric_values
     assert length(metric_values) == 2
 
-    sent_metric_value_1 = Enum.find(metric_values, & &1.label == "l1")
+    sent_metric_value_1 = Enum.find(metric_values, &(&1.label == "l1"))
     assert sent_metric_value_1.start_time == 1000
     assert sent_metric_value_1.value == 1
 
-    sent_metric_value_2 = Enum.find(metric_values, & &1.label == "l2")
+    sent_metric_value_2 = Enum.find(metric_values, &(&1.label == "l2"))
     assert sent_metric_value_2.start_time == 2000
     assert sent_metric_value_2.value == 2
     assert sent_metric_value_2.context == [{"hello", "there"}]
@@ -58,7 +58,7 @@ defmodule PryIn.DataForwarderTest do
 
   test "includes metadata" do
     interaction_1 = Factory.build(:request, start_time: 1000, duration: 1, interaction_id: "i1")
-    pid_1 = spawn fn -> :timer.sleep(5000) end
+    pid_1 = spawn(fn -> :timer.sleep(5000) end)
 
     InteractionStore.start_interaction(pid_1, interaction_1)
     InteractionStore.finish_interaction(pid_1)
@@ -68,7 +68,8 @@ defmodule PryIn.DataForwarderTest do
     data = Data.decode(encoded_data)
     assert data.env == :dev
     assert data.pryin_version == "1.5.0"
-    assert data.app_version == "1.2.7" # otp_app ist set to :exprotobuf
+    # otp_app ist set to :exprotobuf
+    assert data.app_version == "1.2.7"
   end
 
   for env <- ~w(dev staging prod)a do
@@ -107,13 +108,17 @@ defmodule PryIn.DataForwarderTest do
     InteractionStore.start_interaction(self(), interaction_1)
     InteractionStore.finish_interaction(self())
 
-    captured_log = ExUnit.CaptureLog.capture_log [level: :error], fn ->
-      send(PryIn.DataForwarder, :forward_data)
-      assert_receive {:data_sent, encoded_data}
-      data = Data.decode(encoded_data)
-      assert data.env == :dev
-    end
-    assert captured_log =~ "[PryIn] `env` configuration needs to be one of [:dev, :staging, :prod]. Got :different_env"
+    captured_log =
+      ExUnit.CaptureLog.capture_log([level: :error], fn ->
+        send(PryIn.DataForwarder, :forward_data)
+        assert_receive {:data_sent, encoded_data}
+        data = Data.decode(encoded_data)
+        assert data.env == :dev
+      end)
+
+    assert captured_log =~
+             "[PryIn] `env` configuration needs to be one of [:dev, :staging, :prod]. Got :different_env"
+
     Application.put_env(:pryin, :env, :dev)
   end
 end

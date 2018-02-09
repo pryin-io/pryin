@@ -6,7 +6,7 @@ defmodule PryIn.CustomTraceTest do
     CustomTrace.start(group: "workers", key: "daily_email_job")
     CustomTrace.finish()
 
-    [interaction] = InteractionStore.get_state.finished_interactions
+    [interaction] = InteractionStore.get_state().finished_interactions
     assert interaction.start_time
     assert interaction.duration
     assert interaction.type == :custom_trace
@@ -17,12 +17,13 @@ defmodule PryIn.CustomTraceTest do
 
   test "supports rate sampling" do
     Application.put_env(:pryin, :max_interactions_for_interval, 1000)
+
     for _ <- 0..1000 do
       CustomTrace.start(group: "workers", key: "daily_email_job", sample_rate: 0.5)
       CustomTrace.finish()
     end
 
-    interaction_length = length(InteractionStore.get_state.finished_interactions)
+    interaction_length = length(InteractionStore.get_state().finished_interactions)
     assert interaction_length > 300
     assert interaction_length < 700
   end
@@ -33,7 +34,7 @@ defmodule PryIn.CustomTraceTest do
     CustomTrace.set_key("daily_email_job")
     CustomTrace.finish()
 
-    [interaction] = InteractionStore.get_state.finished_interactions
+    [interaction] = InteractionStore.get_state().finished_interactions
     assert interaction.custom_group == "workers"
     assert interaction.custom_key == "daily_email_job"
   end
@@ -44,7 +45,7 @@ defmodule PryIn.CustomTraceTest do
     CustomTrace.set_key("daily_email_job")
     CustomTrace.finish()
 
-    [interaction] = InteractionStore.get_state.finished_interactions
+    [interaction] = InteractionStore.get_state().finished_interactions
     assert interaction.custom_group == "workers"
     assert interaction.custom_key == "daily_email_job"
   end
@@ -61,5 +62,4 @@ defmodule PryIn.CustomTraceTest do
 
     {:ok, _} = Application.ensure_all_started(:pryin)
   end
-
 end
