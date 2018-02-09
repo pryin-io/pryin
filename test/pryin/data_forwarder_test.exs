@@ -69,7 +69,7 @@ defmodule PryIn.DataForwarderTest do
     assert data.env == :dev
     assert data.pryin_version == "1.5.0"
     # otp_app ist set to :exprotobuf
-    assert data.app_version == "1.2.7"
+    assert data.app_version == "1.2.9"
   end
 
   for env <- ~w(dev staging prod)a do
