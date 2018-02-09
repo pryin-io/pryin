@@ -2,6 +2,7 @@ defmodule PryIn do
   for file <- Path.wildcard("lib/proto/*.proto") do
     @external_resource file
   end
+
   use Protobuf, from: Path.wildcard("lib/proto/*.proto")
   use Application
 
@@ -15,17 +16,16 @@ defmodule PryIn do
     import Supervisor.Spec, warn: false
 
     children = [
-      :hackney_pool.child_spec(:pryin_pool, [timeout: 60_000, max_connections: 5]),
+      :hackney_pool.child_spec(:pryin_pool, timeout: 60_000, max_connections: 5),
       worker(PryIn.InteractionStore, []),
       worker(PryIn.SystemMetricsCollector, []),
       worker(PryIn.MetricValueStore, []),
-      worker(PryIn.DataForwarder, []),
+      worker(PryIn.DataForwarder, [])
     ]
 
     opts = [strategy: :rest_for_one, name: PryIn.Supervisor]
     Supervisor.start_link(children, opts)
   end
-
 
   @doc """
   Join a process into a running trace.
@@ -54,7 +54,6 @@ defmodule PryIn do
     PryIn.InteractionStore.add_child(parent_pid, child_pid)
   end
 
-
   @doc """
   Drops a running trace.
 
@@ -73,7 +72,6 @@ defmodule PryIn do
   def drop_trace(pid \\ self()) do
     PryIn.InteractionStore.drop_interaction(pid)
   end
-
 
   @doc """
   Add context to a running trace.
@@ -95,7 +93,6 @@ defmodule PryIn do
       PryIn.InteractionStore.put_context(pid, key, value)
     end
   end
-
 
   @doc """
   Collects metrics about custom code.
@@ -123,6 +120,7 @@ defmodule PryIn do
   defmacro instrument(key, opts \\ [], do: code) do
     compile_metadata = Macro.escape(__CALLER__)
     sample_rate = opts[:sample_rate]
+
     quote do
       require Logger
       should_sample = PryIn.SamplingHelper.should_sample(unquote(sample_rate))
@@ -133,12 +131,15 @@ defmodule PryIn do
 
         result = unquote(code)
 
-        time_diff = :erlang.monotonic_time - start
+        time_diff = :erlang.monotonic_time() - start
+
         try do
           PryIn.CustomInstrumentation.finish(time_diff, data)
         catch
           kind, error ->
-            Logger.error "[PryIn] Error finishing custom instrumentation: " <> Exception.format(kind, error)
+            Logger.error(
+              "[PryIn] Error finishing custom instrumentation: " <> Exception.format(kind, error)
+            )
         end
 
         result
@@ -147,7 +148,6 @@ defmodule PryIn do
       end
     end
   end
-
 
   @doc """
   Add the current value for a metric.
@@ -171,9 +171,11 @@ defmodule PryIn do
   ```
   """
   def track_metric(label, value, opts \\ %{}) when is_binary(label) and is_number(value) do
-    PryIn.MetricValueStore.add_metric_value(label,
+    PryIn.MetricValueStore.add_metric_value(
+      label,
       value,
-      DateTime.to_unix(DateTime.utc_now , :milliseconds),
-      Enum.into(opts, %{}))
+      DateTime.to_unix(DateTime.utc_now(), :milliseconds),
+      Enum.into(opts, %{})
+    )
   end
 end

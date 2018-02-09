@@ -3,9 +3,11 @@ defmodule PryIn.GenServerTest do
 
   defmodule TestGenServer do
     use GenServer
-    use PryIn.GenServer, values: %{
-      "TestGenServer queue length" => {&__MODULE__.queue_length/1, 100}
-    }
+
+    use PryIn.GenServer,
+      values: %{
+        "TestGenServer queue length" => {&__MODULE__.queue_length/1, 100}
+      }
 
     def start_link(default) do
       GenServer.start_link(__MODULE__, default)
@@ -23,12 +25,12 @@ defmodule PryIn.GenServerTest do
   test "collects and forwards metrics as configured" do
     {:ok, _pid} = TestGenServer.start_link([])
     :timer.sleep(150)
-    [metric_value] = PryIn.MetricValueStore.pop_metric_values
+    [metric_value] = PryIn.MetricValueStore.pop_metric_values()
     assert metric_value.label == "TestGenServer queue length"
     assert metric_value.value == 0
 
     :timer.sleep(150)
-    [metric_value] = PryIn.MetricValueStore.pop_metric_values
+    [metric_value] = PryIn.MetricValueStore.pop_metric_values()
     assert metric_value.label == "TestGenServer queue length"
     assert metric_value.value == 1
   end

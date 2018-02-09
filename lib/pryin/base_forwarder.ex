@@ -12,11 +12,11 @@ defmodule PryIn.BaseForwarder do
       env: env(),
       pryin_version: pryin_version(),
       app_version: app_version(),
-      node_name: node_name(),
+      node_name: node_name()
     ]
     |> Keyword.merge(data)
-    |> Data.new
-    |> Data.encode
+    |> Data.new()
+    |> Data.encode()
   end
 
   def api do
@@ -53,7 +53,12 @@ defmodule PryIn.BaseForwarder do
   end
 
   defp wrong_env(val) do
-    Logger.error "[PryIn] `env` configuration needs to be one of #{inspect @allowed_envs}. Got #{inspect val}"
+    Logger.error(
+      "[PryIn] `env` configuration needs to be one of #{inspect(@allowed_envs)}. Got #{
+        inspect(val)
+      }"
+    )
+
     :dev
   end
 end

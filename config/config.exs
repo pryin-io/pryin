@@ -28,6 +28,6 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 
-if File.exists?(Path.join([__DIR__, "#{Mix.env}.exs"])) do
-  import_config "#{Mix.env}.exs"
+if File.exists?(Path.join([__DIR__, "#{Mix.env()}.exs"])) do
+  import_config "#{Mix.env()}.exs"
 end

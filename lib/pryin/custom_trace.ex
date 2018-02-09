@@ -27,7 +27,6 @@ defmodule PryIn.CustomTrace do
   This is useful for code that gets called very often, where a smaller sample already provides significant insights.
   """
 
-
   @doc """
   Starts a custom trace.
   Can alreay set group and key for the trace.
@@ -38,11 +37,16 @@ defmodule PryIn.CustomTrace do
   def start(opts \\ []) do
     if PryIn.SamplingHelper.should_sample(opts[:sample_rate]) do
       req_start_time = TimeHelper.utc_unix_datetime()
-      interaction = Interaction.new(start_time: req_start_time,
-        type: :custom_trace,
-        custom_group: opts[:group],
-        custom_key: opts[:key],
-        pid: inspect(self()))
+
+      interaction =
+        Interaction.new(
+          start_time: req_start_time,
+          type: :custom_trace,
+          custom_group: opts[:group],
+          custom_key: opts[:key],
+          pid: inspect(self())
+        )
+
       InteractionStore.start_interaction(self(), interaction)
     end
   end
@@ -53,6 +57,7 @@ defmodule PryIn.CustomTrace do
   """
   def set_group(group) do
     pid = self()
+
     Wormhole.capture(fn ->
       if InteractionStore.has_pid?(pid) do
         InteractionStore.set_interaction_data(pid, %{custom_group: group})
@@ -66,6 +71,7 @@ defmodule PryIn.CustomTrace do
   """
   def set_key(key) do
     pid = self()
+
     Wormhole.capture(fn ->
       if InteractionStore.has_pid?(pid) do
         InteractionStore.set_interaction_data(pid, %{custom_key: key})
@@ -82,16 +88,21 @@ defmodule PryIn.CustomTrace do
   """
   def finish do
     pid = self()
+
     Wormhole.capture(fn ->
       if InteractionStore.has_pid?(pid) do
         duration = TimeHelper.utc_unix_datetime() - InteractionStore.get_field(pid, :start_time)
         interaction_id = maybe_generate_interaction_id(pid)
-        InteractionStore.set_interaction_data(pid, %{duration: duration, interaction_id: interaction_id})
+
+        InteractionStore.set_interaction_data(pid, %{
+          duration: duration,
+          interaction_id: interaction_id
+        })
+
         InteractionStore.finish_interaction(pid)
       end
     end)
   end
-
 
   defp maybe_generate_interaction_id(pid) do
     case InteractionStore.get_field(pid, :interaction_id) do
@@ -100,5 +111,4 @@ defmodule PryIn.CustomTrace do
       interaction_id -> interaction_id
     end
   end
-
 end

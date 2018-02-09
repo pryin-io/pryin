@@ -18,10 +18,11 @@ defmodule PryIn.EctoLogger do
   @doc false
   def log(log_entry) do
     parent_pid = self()
-    Wormhole.capture fn ->
+
+    Wormhole.capture(fn ->
       pid = Map.get(log_entry, :connection_pid) || parent_pid
       do_log(log_entry, pid)
-    end
+    end)
 
     log_entry
   end
@@ -50,6 +51,7 @@ defmodule PryIn.EctoLogger do
   end
 
   defp process_time(nil), do: 0
+
   defp process_time(time) do
     System.convert_time_unit(time, :native, :micro_seconds)
   end

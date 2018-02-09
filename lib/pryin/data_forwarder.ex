@@ -10,14 +10,12 @@ defmodule PryIn.DataForwarder do
   # `config :pryin, :forward_interval, 1000`.
   # API restrictions may apply.
 
-
   # CLIENT
 
   @doc false
   def start_link() do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
-
 
   # SERVER
   def init(state) do
@@ -31,9 +29,10 @@ defmodule PryIn.DataForwarder do
 
     if Enum.any?(interactions) || Enum.any?(metric_values) do
       [interactions: interactions, metric_values: metric_values]
-      |> BaseForwarder.wrap_data
+      |> BaseForwarder.wrap_data()
       |> BaseForwarder.api().send_data
     end
+
     Process.send_after(self(), :forward_data, forward_interval_millis())
 
     {:noreply, state}

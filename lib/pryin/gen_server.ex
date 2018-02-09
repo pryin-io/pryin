@@ -1,5 +1,4 @@
 defmodule PryIn.GenServer do
-
   @moduledoc """
   Allows tracking data about a GenServer process.
 
@@ -58,12 +57,13 @@ defmodule PryIn.GenServer do
 
   defmacro __before_compile__(_env) do
     quote location: :keep do
-      defoverridable [init: 1, handle_info: 2]
+      defoverridable init: 1, handle_info: 2
 
       def init(args) do
         for {name, {_, interval}} <- @pryin_tracked_value_funs do
           Process.send_after(self(), {:track_pryin_metric, name}, interval)
         end
+
         super(args)
       end
 

@@ -9,7 +9,8 @@ defmodule PryIn.SystemMetricsCollectorTest do
     data = Data.decode(encoded_data)
     assert data.env == :dev
     assert data.pryin_version == "1.5.0"
-    assert data.app_version == "1.2.7" # otp_app ist set to :exprotobuf
+    # otp_app ist set to :exprotobuf
+    assert data.app_version == "1.2.7"
     assert data.node_name == "nonode@nohost"
     assert is_number(data.system_metrics.process_count)
     assert is_number(data.system_metrics.run_queue)
@@ -24,10 +25,12 @@ defmodule PryIn.SystemMetricsCollectorTest do
     assert is_number(data.system_metrics.gc_count)
     assert is_number(data.system_metrics.gc_words_reclaimed)
     assert is_number(data.system_metrics.reductions)
+
     for {scheduler_index, scheduler_usage} <- data.system_metrics.scheduler_usage do
       assert is_number(scheduler_index)
       assert is_number(scheduler_usage)
     end
+
     assert is_number(data.system_metrics.time)
   end
 
