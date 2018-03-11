@@ -68,7 +68,7 @@ plug MyApp.Router
   you need to join the transport's trace first:
 ```elixir
 def join("rooms:lobby", message, socket) do
-  PryIn.join_trace(self(), socket.transport_pid)
+  PryIn.join_trace(socket.transport_pid, self())
   Repo.all(...)
   ...
 ```
