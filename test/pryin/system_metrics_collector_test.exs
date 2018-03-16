@@ -3,12 +3,16 @@ defmodule PryIn.SystemMetricsCollectorTest do
   alias PryIn.{Data, SystemMetricsCollector}
 
   test "sends system metrics" do
-    Application.put_env(:pryin, :collect_interval, 0)
+    Application.put_env(:pryin, :collect_interval, 100)
+
     send(SystemMetricsCollector, :collect_metrics)
-    assert_receive({:system_metrics_sent, encoded_data}, 500)
+
+    assert_receive({:system_metrics_sent, encoded_data}, 200)
+
     data = Data.decode(encoded_data)
+
     assert data.env == :dev
-    assert data.pryin_version == "1.5.0"
+    assert data.pryin_version == "1.5.1"
     # otp_app ist set to :exprotobuf
     assert data.app_version == "1.2.9"
     assert data.node_name == "nonode@nohost"
@@ -26,12 +30,29 @@ defmodule PryIn.SystemMetricsCollectorTest do
     assert is_number(data.system_metrics.gc_words_reclaimed)
     assert is_number(data.system_metrics.reductions)
 
-    for {scheduler_index, scheduler_usage} <- data.system_metrics.scheduler_usage do
+    assert length(data.system_metrics.scheduler_usage) > 0
+
+    for %PryIn.SystemMetrics.SchedulerUsage{
+          scheduler_index: scheduler_index,
+          wall_time_diff: wall_time_diff
+        } <- data.system_metrics.scheduler_usage do
       assert is_number(scheduler_index)
-      assert is_number(scheduler_usage)
+      assert is_number(wall_time_diff)
     end
 
     assert is_number(data.system_metrics.time)
+  end
+
+  test "doesn't fail when the scheduler_wall_time flag is false" do
+    Application.put_env(:pryin, :collect_interval, 500)
+    :timer.apply_interval(1, :erlang, :system_flag, [:scheduler_wall_time, false])
+    send(SystemMetricsCollector, :collect_metrics)
+
+    assert_receive({:system_metrics_sent, encoded_data}, 1000)
+    data = Data.decode(encoded_data)
+    # can't really test for anything usefull here, except no error being raised.
+    # setting the system flag only works sometimes.
+    assert data.system_metrics.scheduler_usage
   end
 
   test "users can set a custom node name" do

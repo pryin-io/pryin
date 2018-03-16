@@ -56,6 +56,8 @@ defmodule PryIn.SystemMetricsCollector do
     |> BaseForwarder.api().send_system_metrics
   end
 
+  defp parse_scheduler_usage(:undefined), do: []
+
   defp parse_scheduler_usage(scheduler_usage) do
     for {scheduler_index, wall_time_diff} <- scheduler_usage do
       SystemMetrics.SchedulerUsage.new(
