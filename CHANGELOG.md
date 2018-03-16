@@ -1,8 +1,9 @@
 # Changelog
 
-## vNext
+## v1.5.1
 
 - allow setting custom node names
+- fix error randomly occuring when the scheduler_wall_time system flag was false
 
 ## v1.5.0
 
