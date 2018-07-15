@@ -32,7 +32,7 @@ defmodule PryIn.SystemMetricsCollector do
     SystemMetrics.new(
       process_count: absolutes[:process_count],
       run_queue: absolutes[:run_queue],
-      error_logger_queue_len: absolutes[:error_logger_queue_len],
+      error_logger_queue_len: absolutes[:error_logger_queue_len] || 0,
       memory_total: absolutes[:memory_total],
       memory_procs: absolutes[:memory_procs],
       memory_atoms: absolutes[:memory_atoms],
