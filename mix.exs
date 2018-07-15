@@ -4,7 +4,7 @@ defmodule PryIn.Mixfile do
   def project do
     [
       app: :pryin,
-      version: "1.5.1",
+      version: "1.5.2",
       elixir: "~> 1.3",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,

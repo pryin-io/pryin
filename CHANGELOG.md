@@ -2,6 +2,10 @@
 
 ## v1.5.1
 
+- fix system metrics collection for recent versions of recon / otp that don't include error_logger_queue_len
+
+## v1.5.1
+
 - allow setting custom node names
 - fix error randomly occuring when the scheduler_wall_time system flag was false
 
